@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "$treesap/": "../",
+    "$std/": "https://deno.land/std@0.150.0/"
+  }
+}

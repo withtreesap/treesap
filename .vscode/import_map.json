@@ -1,0 +1,10 @@
+{
+  "scopes": {
+    "THIS FILE EXISTS ONLY FOR VSCODE! IT IS NOT USED AT RUNTIME": {}
+  },
+  "imports": {
+    "$treesap/": "../",
+
+    "$std/": "https://deno.land/std@0.150.0/"
+  }
+}

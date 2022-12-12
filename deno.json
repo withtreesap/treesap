@@ -1,0 +1,6 @@
+{
+  "tasks": {
+    "www": "deno run -A --watch=www/static/,www/routes/,docs/ www/dev.ts"
+  },
+  "importMap": "./.vscode/import_map.json"
+}

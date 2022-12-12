@@ -9,8 +9,8 @@ It is built using Lit, Deno, and Web Components. Every page is server side rende
 
 It takes **heavy** inspiration from a number of amazing projects including but not limited to:
 
-- Fresh by Deno
-- Astro
-- Enhance
-- WebC from 11ty
-- NextJS
+- [Fresh by Deno](https://fresh.dev)
+- [Astro](https://astro.build)
+- [Enhance](https://enhance.dev)
+- [WebC from 11ty](https://github.com/11ty/webc)
+- [NextJS](https://nextjs.org)

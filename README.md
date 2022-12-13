@@ -7,7 +7,7 @@ This is the source code for Treesap, a modern frontend framework for building in
 
 It takes **heavy** inspiration from a number of amazing projects including but not limited to:
 
-- [Fresh by Deno](https://fresh.dev)
+- [Fresh by Deno](https://fresh.deno.dev)
 - [Astro](https://astro.build)
 - [Enhance](https://enhance.dev)
 - [WebC from 11ty](https://github.com/11ty/webc)

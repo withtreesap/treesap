@@ -1,3 +1,3 @@
-import { start } from "$treesap/server.ts";
+import dev from "$treesap/dev.ts";
 
-await start()
+await dev()

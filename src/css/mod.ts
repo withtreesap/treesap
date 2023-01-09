@@ -10,9 +10,8 @@
  */
 export function css(cssString: TemplateStringsArray) {
   return cssString
-    .join('') // join the strings together
-    .replace(/"/g, '\\"') // preserve double quotes
-    .replace(/'/g, "\\'") // preserve single quotes
-    .replace(/\s+/g, ' ') // replace all whitespace with a single space
-    .replace(/\/\*.*?\*\//g, '') // remove all comments
+  .join('') // join the strings together
+  .replace(/"/g, "'") // convert double quotes to single quotes
+  .replace(/\s+/g, ' ') // replace all whitespace with a single space
+  .replace(/\/\*.*?\*\//g, '') // remove all comments
 }

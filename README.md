@@ -1,3 +1,3 @@
-# Welcome to Treesap 🌲
+# Treesap 🌲
 
 There's more to come here so stay tuned... 🤫

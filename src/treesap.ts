@@ -145,6 +145,20 @@ export class Treesap {
     return collections.find(c => c.slug === collection);
   }
 
+  async createCollection(collection: Collection) {
+    const res = await this.db.atomic()
+      .set(["collections", collection.slug], collection)
+      .commit();
+    return res;
+  } 
+
+  async updateCollection(collection: Collection) {
+    const res = await this.db.atomic()
+      .set(["collections", collection.slug], collection)
+      .commit();
+    return res;
+  }
+
   // a find method that can be used to find all items in a collection
   async find({
     collection,
@@ -195,7 +209,7 @@ export class Treesap {
     await this.db.set([collection, id], updated);
     return updated;
   }
-  
+
   // a delete method that can be used to delete data directly from the kv database
   async delete({
     collection,

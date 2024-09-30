@@ -22,14 +22,13 @@ export interface CmsNavData {
 export class Treesap {
   app: Hono;
   db: Deno.Kv;
-  collections: Collection[];
+  collections: Collection[] | null = null;
 
   constructor(
     options: TreesapOptions
   ) {
     this.app = options.app;
     this.db = options.db;
-    this.collections = options.collections;
     this.registerRoutes();
   }
 
@@ -43,13 +42,31 @@ export class Treesap {
     return query;
   }
 
-  registerRoutes() {
-    this.app.get("/", (c) => c.redirect("/"));
+  async registerRoutes() {
+    this.collections = await this.getCollections(); 
+    this.app.get("/", async (c) => {
+        // Use cached collections, if available
+        const collections = this.collections || await this.getCollections();
+        return c.json(collections);
+    });
     this.api();
   }
 
-  api() { 
-    this.collections.forEach(collection => {
+  async getCollections(): Promise<Collection[]> {
+    const collections = [];
+    const result = this.db.list({ prefix: ["collections"] });
+    for await (const item of result) {
+        collections.push(item.value as Collection);
+    }
+
+    return collections
+  }
+
+  async api() { 
+    // Use cached collections
+    const collections = this.collections!;
+
+    collections.forEach(collection => {
       this.app.get(`/${collection.slug}`, async (c) => {
         // where is a string of key=value pairs separated by ;
         // ex. name=John;age=30;city=New York
@@ -109,9 +126,11 @@ export class Treesap {
     });
   }
 
-   getCmsNav(): CmsNavData[] {
+  async getCmsNav(): Promise<CmsNavData[]> {
+    // Use cached collections, if available
+    const collections = this.collections || await this.getCollections();
     const nav: CmsNavData[] = [];
-    for (const collection of this.collections) {
+    for (const collection of collections) {
       nav.push({
         label: collection.labels.plural,
         href: `/cms/${collection.slug}`,
@@ -120,8 +139,10 @@ export class Treesap {
     return nav;
   }
 
-  getCollection(collection: string): Collection | undefined {
-    return this.collections.find(c => c.slug === collection);
+  async getCollection(collection: string): Promise<Collection | undefined> {
+    // Use cached collections, if available
+    const collections = this.collections || await this.getCollections();
+    return collections.find(c => c.slug === collection);
   }
 
   // a find method that can be used to find all items in a collection
@@ -174,6 +195,7 @@ export class Treesap {
     await this.db.set([collection, id], updated);
     return updated;
   }
+  
   // a delete method that can be used to delete data directly from the kv database
   async delete({
     collection,

@@ -1,6 +1,6 @@
 {
   "name": "@treesap/treesap",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -10,6 +10,11 @@
       "LICENSE",
       "README.md",
       "src/**/*.ts"
+    ],
+    "exclude": [
+      "examples/**",
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx"
     ]
   }
 }

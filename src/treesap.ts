@@ -3,7 +3,6 @@ import { Hono } from "@hono/hono";
 export interface TreesapOptions {
   app: Hono;
   db: Deno.Kv;
-  collections: Collection[];
 }
 
 export interface Collection {
@@ -22,7 +21,7 @@ export interface CmsNavData {
 export class Treesap {
   app: Hono;
   db: Deno.Kv;
-  
+
   private collections: Collection[] | null = null;
 
   constructor(

@@ -150,7 +150,7 @@ export class Treesap {
   async create({
     collection,
     data,
-  }: { collection: string, data: { id: string } }) : Promise<any | undefined> {
+  }: { collection: string, data: any }) : Promise<any | undefined> {
     const res = await this.db.atomic()
       .set([collection, data.id], data)
       .commit();
@@ -162,11 +162,17 @@ export class Treesap {
     collection,
     id,
     data,
-  }: { collection: string, id: string, data: { id: string } }) : Promise<any | undefined> {
-    const res = await this.db.atomic()
-      .set([collection, id], data)
-      .commit();
-    return res;
+  }: { collection: string, id: string, data: any }) : Promise<any | undefined> {
+    // get the existing data
+    const existing = await this.db.get([collection, id]);
+    if (!existing) {
+      return undefined;
+    }
+    // merge the existing data with the new data
+    const updated = { ...existing, ...data };
+    // update the data in the kv database
+    await this.db.set([collection, id], updated);
+    return updated;
   }
   // a delete method that can be used to delete data directly from the kv database
   async delete({

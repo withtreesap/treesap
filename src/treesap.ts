@@ -22,7 +22,8 @@ export interface CmsNavData {
 export class Treesap {
   app: Hono;
   db: Deno.Kv;
-  collections: Collection[] | null = null;
+  
+  private collections: Collection[] | null = null;
 
   constructor(
     options: TreesapOptions
@@ -149,13 +150,42 @@ export class Treesap {
     const res = await this.db.atomic()
       .set(["collections", collection.slug], collection)
       .commit();
+    // clear the cached collections
+    if (res.ok) {
+      this.collections = null; 
+    }
+
     return res;
   } 
 
   async updateCollection(collection: Collection) : Promise<any | undefined> {
+
+    // get the existing collection
+    const existing = await this.db.get(["collections", collection.slug]);
+    if (!existing) {
+      return undefined;
+    }
+
+    // find all the items in the collection
+    const items = await this.db.list({ prefix: [collection.slug] });
+    for await (const item of items) {
+      // merge the existing collection with the new collection
+      const updated = { ...existing, ...collection };
+      // update the item
+      await this.db.set([collection.slug, item.key[1]], updated);
+    }
+
+    // merge the existing collection with the new collection
+    const updated = { ...existing, ...collection };
+    
     const res = await this.db.atomic()
-      .set(["collections", collection.slug], collection)
+      .set(["collections", collection.slug], updated)
       .commit();
+
+    // clear the cached collections
+    if (res.ok) {
+      this.collections = null; 
+    }
     return res;
   }
 

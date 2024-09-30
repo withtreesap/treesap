@@ -145,14 +145,14 @@ export class Treesap {
     return collections.find(c => c.slug === collection);
   }
 
-  async createCollection(collection: Collection) {
+  async createCollection(collection: Collection) : Promise<any | undefined> {
     const res = await this.db.atomic()
       .set(["collections", collection.slug], collection)
       .commit();
     return res;
   } 
 
-  async updateCollection(collection: Collection) {
+  async updateCollection(collection: Collection) : Promise<any | undefined> {
     const res = await this.db.atomic()
       .set(["collections", collection.slug], collection)
       .commit();

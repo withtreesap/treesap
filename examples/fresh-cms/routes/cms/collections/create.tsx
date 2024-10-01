@@ -41,7 +41,7 @@ export default function Projects() {
           <h1 class="text-2xl font-bold">Create Collection</h1>
           <button
             type="submit"
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            class="bg-blue-500 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded"
           >
             Save
           </button>
@@ -53,20 +53,20 @@ export default function Projects() {
             type="text"
             placeholder="Collection Slug"
             required
-            class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="border dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <input
+          <input      
             name="singular"
             type="text"
             placeholder="Singular"
             required
-            class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="border dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             name="plural"
             type="text"
             placeholder="Plural"
-            class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="border dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </form>

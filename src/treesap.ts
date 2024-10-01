@@ -13,7 +13,13 @@ export interface Collection {
   };
 }
 
+export interface Global {
+  slug: string;
+  label: string;
+}
+
 export interface CmsNavData {
+  type: "collection" | "global";
   label: string;
   href: string;
 }       
@@ -23,6 +29,7 @@ export class Treesap {
   db: Deno.Kv;
 
   private collections: Collection[] | null = null;
+  private globals: Global[] | null = null;
 
   constructor(
     options: TreesapOptions
@@ -44,22 +51,13 @@ export class Treesap {
 
   async registerRoutes() {
     this.collections = await this.getCollections(); 
+    this.globals = await this.getGlobals();
     this.app.get("/", async (c) => {
         // Use cached collections, if available
         const collections = this.collections || await this.getCollections();
         return c.json(collections);
     });
     this.api();
-  }
-
-  async getCollections(): Promise<Collection[]> {
-    const collections = [];
-    const result = this.db.list({ prefix: ["collections"] });
-    for await (const item of result) {
-        collections.push(item.value as Collection);
-    }
-
-    return collections
   }
 
   async api() { 
@@ -129,14 +127,57 @@ export class Treesap {
   async getCmsNav(): Promise<CmsNavData[]> {
     // Use cached collections, if available
     const collections = this.collections || await this.getCollections();
+    const globals = this.globals || await this.getGlobals();
     const nav: CmsNavData[] = [];
     for (const collection of collections) {
       nav.push({
+        type: "collection",
         label: collection.labels.plural,
-        href: `/cms/${collection.slug}`,
+        href: `/cms/collections/${collection.slug}`,
+      })
+    }
+    for (const global of globals) {
+      nav.push({
+        type: "global",
+        label: global.label,
+        href: `/cms/globals/${global.slug}`,
       })
     }
     return nav;
+  }
+
+  // Globals
+
+  async getGlobals(): Promise<Global[]> {
+    const globals = [];
+    const result = this.db.list({ prefix: ["globals"] });
+    for await (const item of result) {
+        globals.push(item.value as Global);
+    }
+    return globals;
+  }
+
+  async getGlobal(slug: string): Promise<Global | undefined> {
+    const result = await this.db.get(["globals", slug]);
+    return result.value as Global;
+  } 
+
+  async createGlobal(global: Global): Promise<any | undefined> {
+    const res = await this.db.atomic()
+      .set(["globals", global.slug], global)
+      .commit();
+    return res;
+  }
+
+  // Collections
+  async getCollections(): Promise<Collection[]> {
+    const collections = [];
+    const result = this.db.list({ prefix: ["collections"] });
+    for await (const item of result) {
+        collections.push(item.value as Collection);
+    }
+
+    return collections
   }
 
   async getCollection(collection: string): Promise<Collection | undefined> {

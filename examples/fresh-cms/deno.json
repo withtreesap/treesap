@@ -1,0 +1,44 @@
+{
+  "lock": false,
+  "tasks": {
+    "check": "deno fmt --check && deno lint && deno check **/*.ts && deno check **/*.tsx",
+    "cli": "echo \"import '\\$fresh/src/dev/cli.ts'\" | deno run --unstable -A -",
+    "manifest": "deno task cli manifest $(pwd)",
+    "start": "deno run --unstable-kv -A --watch=static/,routes/ dev.ts",
+    "build": "deno run --unstable-kv -A dev.ts build",
+    "preview": "deno run -A main.ts",
+    "update": "deno run -A -r https://fresh.deno.dev/update ."
+  },
+  "lint": {
+    "rules": {
+      "tags": [
+        "fresh",
+        "recommended"
+      ]
+    }
+  },
+  "exclude": [
+    "**/_fresh/*"
+  ],
+  "imports": {
+    "$fresh/": "https://deno.land/x/fresh@1.6.8/",
+    "$std/": "https://deno.land/std@0.216.0/",
+    "@hono/hono": "jsr:@hono/hono@^4.6.3",
+    "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",
+    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.1",
+    "@std/http": "jsr:@std/http@^1.0.7",
+    "@std/ulid": "jsr:@std/ulid@^1.0.0",
+    "@treesap/treesap": "../../src/treesap.ts",
+    "@utils/": "../../src/utils/",
+    "preact": "https://esm.sh/preact@10.19.6",
+    "preact/": "https://esm.sh/preact@10.19.6/",
+    "tailwindcss": "npm:tailwindcss@3.4.1",
+    "tailwindcss/": "npm:/tailwindcss@3.4.1/",
+    "tailwindcss/plugin": "npm:/tailwindcss@3.4.1/plugin.js"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  },
+  "nodeModulesDir": true
+}

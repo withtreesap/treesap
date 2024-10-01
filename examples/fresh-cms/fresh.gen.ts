@@ -4,17 +4,17 @@
 
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
+import * as $admin_layout from "./routes/admin/_layout.tsx";
+import * as $admin_collections_collection_id_ from "./routes/admin/collections/[collection]/[id].tsx";
+import * as $admin_collections_collection_create from "./routes/admin/collections/[collection]/create.tsx";
+import * as $admin_collections_collection_edit from "./routes/admin/collections/[collection]/edit.tsx";
+import * as $admin_collections_collection_index from "./routes/admin/collections/[collection]/index.tsx";
+import * as $admin_collections_create from "./routes/admin/collections/create.tsx";
+import * as $admin_globals_global_edit from "./routes/admin/globals/[global]/edit.tsx";
+import * as $admin_globals_global_index from "./routes/admin/globals/[global]/index.tsx";
+import * as $admin_globals_create from "./routes/admin/globals/create.tsx";
+import * as $admin_index from "./routes/admin/index.tsx";
 import * as $api_route_ from "./routes/api/[...route].ts";
-import * as $cms_layout from "./routes/admin/_layout.tsx";
-import * as $cms_collections_collection_id_ from "./routes/admin/collections/[collection]/[id].tsx";
-import * as $cms_collections_collection_create from "./routes/admin/collections/[collection]/create.tsx";
-import * as $cms_collections_collection_edit from "./routes/admin/collections/[collection]/edit.tsx";
-import * as $cms_collections_collection_index from "./routes/admin/collections/[collection]/index.tsx";
-import * as $cms_collections_create from "./routes/admin/collections/create.tsx";
-import * as $cms_globals_global_edit from "./routes/admin/globals/[global]/edit.tsx";
-import * as $cms_globals_global_index from "./routes/admin/globals/[global]/index.tsx";
-import * as $cms_globals_create from "./routes/admin/globals/create.tsx";
-import * as $cms_index from "./routes/admin/index.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import * as $DeleteItemButton from "./islands/DeleteItemButton.tsx";
@@ -24,21 +24,21 @@ const manifest = {
   routes: {
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
+    "./routes/admin/_layout.tsx": $admin_layout,
+    "./routes/admin/collections/[collection]/[id].tsx":
+      $admin_collections_collection_id_,
+    "./routes/admin/collections/[collection]/create.tsx":
+      $admin_collections_collection_create,
+    "./routes/admin/collections/[collection]/edit.tsx":
+      $admin_collections_collection_edit,
+    "./routes/admin/collections/[collection]/index.tsx":
+      $admin_collections_collection_index,
+    "./routes/admin/collections/create.tsx": $admin_collections_create,
+    "./routes/admin/globals/[global]/edit.tsx": $admin_globals_global_edit,
+    "./routes/admin/globals/[global]/index.tsx": $admin_globals_global_index,
+    "./routes/admin/globals/create.tsx": $admin_globals_create,
+    "./routes/admin/index.tsx": $admin_index,
     "./routes/api/[...route].ts": $api_route_,
-    "./routes/cms/_layout.tsx": $cms_layout,
-    "./routes/cms/collections/[collection]/[id].tsx":
-      $cms_collections_collection_id_,
-    "./routes/cms/collections/[collection]/create.tsx":
-      $cms_collections_collection_create,
-    "./routes/cms/collections/[collection]/edit.tsx":
-      $cms_collections_collection_edit,
-    "./routes/cms/collections/[collection]/index.tsx":
-      $cms_collections_collection_index,
-    "./routes/cms/collections/create.tsx": $cms_collections_create,
-    "./routes/cms/globals/[global]/edit.tsx": $cms_globals_global_edit,
-    "./routes/cms/globals/[global]/index.tsx": $cms_globals_global_index,
-    "./routes/cms/globals/create.tsx": $cms_globals_create,
-    "./routes/cms/index.tsx": $cms_index,
     "./routes/index.tsx": $index,
   },
   islands: {

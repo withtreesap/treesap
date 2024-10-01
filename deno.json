@@ -6,6 +6,9 @@
     "type": "git",
     "url": "https://github.com/withtreesap/treesap.git"
   },
+  "tasks": {
+    "build:examples:fresh-cms": "deno run --unstable-kv -A examples/fresh-cms/dev.ts build"
+  },
   "exports": {
     ".": "./src/index.ts"
   },

@@ -20,8 +20,8 @@ export interface Global {
 
 export interface CmsNavData {
   type: "collection" | "global";
+  slug: string;
   label: string;
-  href: string;
 }       
 
 export class Treesap {
@@ -133,14 +133,14 @@ export class Treesap {
       nav.push({
         type: "collection",
         label: collection.labels.plural,
-        href: `/cms/collections/${collection.slug}`,
+        slug: collection.slug,
       })
     }
     for (const global of globals) {
       nav.push({
         type: "global",
         label: global.label,
-        href: `/cms/globals/${global.slug}`,
+        slug: global.slug,
       })
     }
     return nav;

@@ -9,7 +9,8 @@ export const config: RouteConfig = {
 export default defineLayout(async (req, ctx) => {
   const navData = await treesap.getCmsNav();
   const currentPath = ctx.url.pathname;
-  const isActive = (href: string) => href === currentPath;
+  const isActive = (slug: string) => slug === currentPath;
+
 
   const collections: CmsNavData[] = []
   const globals: CmsNavData[] = []
@@ -22,6 +23,7 @@ export default defineLayout(async (req, ctx) => {
     }
   });
 
+  
   return (
     <html lang="en">
       <head>
@@ -43,7 +45,7 @@ export default defineLayout(async (req, ctx) => {
             </svg>
             <span>Back to Site</span>
           </a>
-          <a class="inline-flex items-center justify-center w-8 h-8" href="/cms">
+          <a class="inline-flex items-center justify-center w-8 h-8" href="/admin">
             <span class="text-2xl">🌲</span>
           </a>
           <div class="flex justify-between items-center mb-2">
@@ -57,7 +59,7 @@ export default defineLayout(async (req, ctx) => {
           <ul>
             {collections.map((nav) => (
               <li key={nav.label}>
-                <a href={nav.href} class={`flex items-center gap-2 text-sm rounded-lg p-2 hover:bg-gray-100 ${isActive(nav.href) ? "bg-gray-200" : ""}`}>
+                <a href={`/admin/collections/${nav.slug}`} class={`flex items-center gap-2 text-sm rounded-lg p-2 hover:bg-gray-100 ${isActive(nav.slug) ? "bg-gray-200" : ""}`}>
                   <span class="flex items-center justify-center w-4 h-4"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"><path d="M 5.833 0 C 8.595 0 10.833 1.119 10.833 2.5 C 10.833 3.881 8.595 5 5.833 5 C 3.072 5 0.833 3.881 0.833 2.5 C 0.833 1.119 3.072 0 5.833 0 Z M 10.833 6 C 10.833 7.381 8.595 8.5 5.833 8.5 C 3.072 8.5 0.833 7.381 0.833 6 C 0.833 5.31 0.833 4 0.833 4 C 0.833 5.381 3.072 6.5 5.833 6.5 C 8.595 6.5 10.833 5.381 10.833 4 C 10.833 4 10.833 5.31 10.833 6 Z M 10.833 9.5 C 10.833 10.881 8.595 12 5.833 12 C 3.072 12 0.833 10.881 0.833 9.5 C 0.833 8.81 0.833 7.5 0.833 7.5 C 0.833 8.881 3.072 10 5.833 10 C 8.595 10 10.833 8.881 10.833 7.5 C 10.833 7.5 10.833 8.81 10.833 9.5 Z" fill="currentColor"></path></svg></span>
                   {nav.label}
                 </a>
@@ -75,7 +77,7 @@ export default defineLayout(async (req, ctx) => {
           <ul>
             {globals.map((nav) => (
               <li key={nav.label}>
-                <a href={nav.href} class={`flex items-center gap-2 text-sm rounded-lg p-2 hover:bg-gray-100 ${isActive(nav.href) ? "bg-gray-200" : ""}`}>
+                <a href={`/admin/globals/${nav.slug}`} class={`flex items-center gap-2 text-sm rounded-lg p-2 hover:bg-gray-100 ${isActive(nav.slug) ? "bg-gray-200" : ""}`}>
                   {nav.label}
                 </a>
               </li>

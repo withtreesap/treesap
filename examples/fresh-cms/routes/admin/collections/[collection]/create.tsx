@@ -32,7 +32,7 @@ export const handler: Handlers<{ collection: string }> = {
       },
     });
 
-    return redirect(`/cms/${collection}/${id}`);
+    return redirect(`/cms/collections/${collection}/${id}`);
   },
 
 };

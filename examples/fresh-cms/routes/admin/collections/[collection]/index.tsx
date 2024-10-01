@@ -19,14 +19,14 @@ export default function CollectionPage(props: PageProps<{ data: any, collectionD
     <div class="">
       <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold">{collectionData.labels.plural}</h1>
-        <a href={`/cms/collections/${collection}/create`} class="bg-blue-500 text-white px-4 py-2 rounded-md">Create</a>
+        <a href={`/admin/collections/${collection}/create`} class="bg-blue-500 text-white px-4 py-2 rounded-md">Create</a>
       </div>
       <ul class="my-4 flex flex-col gap-4">
         {data &&
           data.map((item: { id: string, title: string }) => (
             <li class="border rounded-md p-2 px-4 flex justify-between items-center">
               <div>
-                <a href={`/cms/collections/${collection}/${item.id}`}>
+                <a href={`/admin/collections/${collection}/${item.id}`}>
                   <h2 class="text-md font-bold">{item.title}</h2>
                 </a>
               </div>

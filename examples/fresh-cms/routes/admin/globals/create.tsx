@@ -20,7 +20,7 @@ export const handler: Handlers<{ collection: string }> = {
       label,
     });
 
-    return redirect(`/cms/globals/${slug}`);
+    return redirect(`/admin/globals/${slug}`);
   },
 
 };

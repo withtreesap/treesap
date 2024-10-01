@@ -20,7 +20,7 @@ export const handler: Handlers = {
   //   }
 
 
-  //   return redirect(`/cms/${collection}/${id}`);
+  //   return redirect(`/admin/${collection}/${id}`);
 
   // },
 
@@ -44,7 +44,7 @@ export default function Projects(props: PageProps) {
         <div class="flex justify-between mb-4 gap-4">
           <div class="flex gap-4">
             <h1 class="text-2xl font-bold">{itemData.label}</h1>
-            <a href={`/cms/globals/${global}/edit`} class="font-bold py-2 px-4 rounded outline outline-2 outline-offset-2">Edit</a>
+            <a href={`/admin/globals/${global}/edit`} class="font-bold py-2 px-4 rounded outline outline-2 outline-offset-2">Edit</a>
           </div>
           <div class="flex gap-4">
             

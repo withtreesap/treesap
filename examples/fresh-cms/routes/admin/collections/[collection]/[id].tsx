@@ -30,7 +30,7 @@ export const handler: Handlers = {
         chipText,
       },
     });
-    return redirect(`/cms/collections/${collection}/${id}`);
+    return redirect(`/admin/collections/${collection}/${id}`);
 
   },
 

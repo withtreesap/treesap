@@ -48,7 +48,7 @@ export default defineLayout(async (req, ctx) => {
           </a>
           <div class="flex justify-between items-center mb-2">
             <h2 class="text-sm font-bold">Collections</h2>
-            <a href="/cms/collections/create" class="text-sm text-primary-500 flex items-center gap-2 hover:bg-gray-100 rounded-md p-2">
+            <a href="/admin/collections/create" class="text-sm text-primary-500 flex items-center gap-2 hover:bg-gray-100 rounded-md p-2">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
               </svg>
@@ -66,7 +66,7 @@ export default defineLayout(async (req, ctx) => {
           </ul>
           <div class="flex justify-between items-center mb-2">
             <h2 class="text-sm font-bold">Globals</h2>
-            <a href="/cms/globals/create" class="text-sm text-primary-500 flex items-center gap-2 hover:bg-gray-100 rounded-md p-2">
+            <a href="/admin/globals/create" class="text-sm text-primary-500 flex items-center gap-2 hover:bg-gray-100 rounded-md p-2">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
               </svg>

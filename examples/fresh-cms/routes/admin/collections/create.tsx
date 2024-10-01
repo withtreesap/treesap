@@ -25,7 +25,7 @@ export const handler: Handlers<{ collection: string }> = {
       labels,
     });
 
-    return redirect(`/cms/collections/${slug}`);
+    return redirect(`/admin/collections/${slug}`);
   },
 
 };

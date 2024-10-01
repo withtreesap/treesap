@@ -16,7 +16,7 @@ function DeleteItemButton(props: { collection: string, id: string }) {
         )
 
         if (res.ok) {
-            globalThis.location.href = `/cms/${collection}`;
+            globalThis.location.href = `/admin/${collection}`;
         } else {
             console.log("Error deleting item");
         }

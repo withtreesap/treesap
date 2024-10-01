@@ -22,7 +22,7 @@ export const handler: Handlers = {
   //     plural,
   //   });
   
-  //   return redirect(`/cms/collections/${collection}`);
+  //   return redirect(`/admin/collections/${collection}`);
 
   // },
 

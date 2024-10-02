@@ -35,7 +35,7 @@ export default defineLayout(async (req, ctx) => {
         <title>Treesap CMS</title>
         <meta name="title" content="Treesap CMS" />
         <link rel="stylesheet" href="/styles.css" />
-        <script src="/wc/wc.esm.js" type="module"></script>
+        {/* <script src="/wc/wc.esm.js" type="module"></script> */}
       </head>
       <body class="bg-background dark:bg-slate-950 text-onbg dark:text-white prose-primary-950 dark:prose-primary-50 flex h-screen ">
         <aside class="w-64 border-r p-4">

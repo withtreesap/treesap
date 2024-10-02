@@ -1,32 +1,10 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { treesap } from '../../../../utils/treesap.ts'
+import { redirect } from "../../../../utils/http.ts";
+
 
 export const handler: Handlers = {
-  // async POST(req, ctx) {
-  //   const form = await req.formData();
-  //   const { slug } = ctx.params;
-
-  //   const newSlug = form.get("slug") as string;
-  //   const singular = form.get("singular") as string;
-  //   const plural = form.get("plural") as string;
-
-  //   if (!slug || !singular || !plural) {
-  //     return Response.json({ error: "Missing required fields" }, {
-  //       status: 400,
-  //     });
-  //   }
-
-  //   await treesap.updateCollection({
-  //     slug,
-  //     singular,
-  //     plural,
-  //   });
-  
-  //   return redirect(`/admin/collections/${collection}`);
-
-  // },
-
-  async GET(req, ctx) {       
+   async GET(req, ctx) {       
     const { collection } = ctx.params;
     const collectionData = await treesap.getCollection(collection);
     
@@ -44,7 +22,7 @@ export default function Projects(props: PageProps) {
         class=""
       >
         <div class="flex justify-end mb-4 gap-4">
-        
+
           <button
             type="submit"
             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -61,19 +39,13 @@ export default function Projects(props: PageProps) {
                 value={collectionData.slug}
                 class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <textarea
-                name="singular"
-                placeholder="Singular"
-                required
-                value={collectionData.labels.singular}
-                class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+         
               <input
                 name="url"
                 type="text"
                 placeholder="Plural"
-                required
-                value={collectionData.labels.plural}
+                
+                value={collectionData.label}
                 class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
          

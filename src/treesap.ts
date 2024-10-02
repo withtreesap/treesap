@@ -1,28 +1,5 @@
 import { Hono } from "@hono/hono";
-
-export interface TreesapOptions {
-  app: Hono;
-  db: Deno.Kv;
-}
-
-export interface Collection {
-  slug: string;
-  labels: {
-    singular: string;
-    plural: string;
-  };
-}
-
-export interface Global {
-  slug: string;
-  label: string;
-}
-
-export interface CmsNavData {
-  type: "collection" | "global";
-  slug: string;
-  label: string;
-}       
+import { Collection, Global, TreesapOptions, CmsNavData } from './types/index.ts';
 
 export class Treesap {
   app: Hono;
@@ -30,6 +7,7 @@ export class Treesap {
 
   private collections: Collection[] | null = null;
   private globals: Global[] | null = null;
+
 
   constructor(
     options: TreesapOptions
@@ -107,20 +85,27 @@ export class Treesap {
         return c.json(data)
       })
 
+      this.app.get(`/collections`, async (c) => {
+        return c.text("collections");
+      })
+
       this.app.get(`/${collection.slug}/:id`, async (c) => {
         const { id } = c.req.param();
-        const itemKey = [collection.slug, id];
-        const item = await this.db.get(itemKey);
+        const item = await this.findByID({ collection: collection.slug, id });
         return c.json(item)
       })
 
       this.app.delete(`/${collection.slug}/:id`, async (c) => {
         const { id } = c.req.param();
-        const itemKey = [collection.slug, id];
-        await this.db.delete(itemKey);
+        await this.delete({ collection: collection.slug, id });
         return c.json({ message: 'Deleted' });
       })
 
+      this.app.delete(`/collections/${collection.slug}`, async (c) => {
+        console.log("deleting collection", collection.slug);
+        await this.deleteCollection(collection.slug);
+        return c.json({ message: 'Deleted' });
+      })
     });
   }
 
@@ -132,7 +117,7 @@ export class Treesap {
     for (const collection of collections) {
       nav.push({
         type: "collection",
-        label: collection.labels.plural,
+        label: collection.label,
         slug: collection.slug,
       })
     }
@@ -166,6 +151,9 @@ export class Treesap {
     const res = await this.db.atomic()
       .set(["globals", global.slug], global)
       .commit();
+    if (res.ok) {
+      this.globals = null;
+    }
     return res;
   }
 
@@ -229,6 +217,25 @@ export class Treesap {
     return res;
   }
 
+  async deleteCollection(collection: string) : Promise<any | undefined> {
+    console.log("deleting collection", collection);
+    // find the collection
+    const collectionItem = await this.getCollection(collection);
+    if (!collectionItem) {
+      return undefined;
+    }
+    // delete all the items in the collection
+    const items = await this.find({ collection: collectionItem.slug });
+    for (const item of items) {
+      await this.delete({ collection: collectionItem.slug, id: item.id });
+    }
+    // delete the collection
+    await this.db.delete([ "collections", collectionItem.slug]);
+    // clear the cached collections
+    this.collections = null;
+    
+  }
+
   // a find method that can be used to find all items in a collection
   async find({
     collection,
@@ -288,8 +295,8 @@ export class Treesap {
     await this.db.delete([collection, id]);
   }
   // a fetch method that can be used to fetch data from the api
-  fetch(req: Request ) : Response | Promise<Response> {
-    return this.app.fetch(req);
+  async fetch(req: Request ) : Promise<Response> {
+    return await this.app.fetch(req);
   }
 }
 

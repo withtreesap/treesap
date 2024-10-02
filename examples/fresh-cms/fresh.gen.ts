@@ -7,6 +7,7 @@ import * as $_app from "./routes/_app.tsx";
 import * as $admin_layout from "./routes/admin/_layout.tsx";
 import * as $admin_collections_collection_id_ from "./routes/admin/collections/[collection]/[id].tsx";
 import * as $admin_collections_collection_create from "./routes/admin/collections/[collection]/create.tsx";
+import * as $admin_collections_collection_delete from "./routes/admin/collections/[collection]/delete.tsx";
 import * as $admin_collections_collection_edit from "./routes/admin/collections/[collection]/edit.tsx";
 import * as $admin_collections_collection_index from "./routes/admin/collections/[collection]/index.tsx";
 import * as $admin_collections_create from "./routes/admin/collections/create.tsx";
@@ -17,7 +18,19 @@ import * as $admin_index from "./routes/admin/index.tsx";
 import * as $api_route_ from "./routes/api/[...route].ts";
 import * as $index from "./routes/index.tsx";
 import * as $Counter from "./islands/Counter.tsx";
-import * as $DeleteItemButton from "./islands/DeleteItemButton.tsx";
+import * as $treesap_DeleteCollectionForm from "./islands/treesap/DeleteCollectionForm.tsx";
+import * as $treesap_FieldsEditor from "./islands/treesap/FieldsEditor.tsx";
+import * as $treesap_ItemsList from "./islands/treesap/ItemsList.tsx";
+import * as $treesap_TreesapForm from "./islands/treesap/TreesapForm.tsx";
+import * as $treesap_fields_DateField from "./islands/treesap/fields/DateField.tsx";
+import * as $treesap_fields_Divider from "./islands/treesap/fields/Divider.tsx";
+import * as $treesap_fields_ListField from "./islands/treesap/fields/ListField.tsx";
+import * as $treesap_fields_NumberField from "./islands/treesap/fields/NumberField.tsx";
+import * as $treesap_fields_OptionField from "./islands/treesap/fields/OptionField.tsx";
+import * as $treesap_fields_PlainTextField from "./islands/treesap/fields/PlainTextField.tsx";
+import * as $treesap_fields_RichTextField from "./islands/treesap/fields/RichTextField.tsx";
+import * as $treesap_fields_SlugField from "./islands/treesap/fields/SlugField.tsx";
+import * as $treesap_fields_ToggleField from "./islands/treesap/fields/ToggleField.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -29,6 +42,8 @@ const manifest = {
       $admin_collections_collection_id_,
     "./routes/admin/collections/[collection]/create.tsx":
       $admin_collections_collection_create,
+    "./routes/admin/collections/[collection]/delete.tsx":
+      $admin_collections_collection_delete,
     "./routes/admin/collections/[collection]/edit.tsx":
       $admin_collections_collection_edit,
     "./routes/admin/collections/[collection]/index.tsx":
@@ -43,7 +58,20 @@ const manifest = {
   },
   islands: {
     "./islands/Counter.tsx": $Counter,
-    "./islands/DeleteItemButton.tsx": $DeleteItemButton,
+    "./islands/treesap/DeleteCollectionForm.tsx": $treesap_DeleteCollectionForm,
+    "./islands/treesap/FieldsEditor.tsx": $treesap_FieldsEditor,
+    "./islands/treesap/ItemsList.tsx": $treesap_ItemsList,
+    "./islands/treesap/TreesapForm.tsx": $treesap_TreesapForm,
+    "./islands/treesap/fields/DateField.tsx": $treesap_fields_DateField,
+    "./islands/treesap/fields/Divider.tsx": $treesap_fields_Divider,
+    "./islands/treesap/fields/ListField.tsx": $treesap_fields_ListField,
+    "./islands/treesap/fields/NumberField.tsx": $treesap_fields_NumberField,
+    "./islands/treesap/fields/OptionField.tsx": $treesap_fields_OptionField,
+    "./islands/treesap/fields/PlainTextField.tsx":
+      $treesap_fields_PlainTextField,
+    "./islands/treesap/fields/RichTextField.tsx": $treesap_fields_RichTextField,
+    "./islands/treesap/fields/SlugField.tsx": $treesap_fields_SlugField,
+    "./islands/treesap/fields/ToggleField.tsx": $treesap_fields_ToggleField,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

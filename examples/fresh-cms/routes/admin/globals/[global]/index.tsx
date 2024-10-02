@@ -1,29 +1,8 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { treesap } from "../../../../utils/treesap.ts";
 import { redirect } from "../../../../utils/http.ts";
-import DeleteItemButton from "../../../../islands/DeleteItemButton.tsx";
 
 export const handler: Handlers = {
-  // async POST(req, ctx) {
-  //   const form = await req.formData();
-  //   const { global, id } = ctx.params;
-
-  //   const title = form.get("title") as string;
-  //   const description = form.get("description") as string;
-  //   const url = form.get("url") as string;
-  //   const chipText = form.get("chipText") as string | null;
-
-  //   if (!title || !description || !url) {
-  //     return Response.json({ error: "Missing required fields" }, {
-  //       status: 400,
-  //     });
-  //   }
-
-
-  //   return redirect(`/admin/${collection}/${id}`);
-
-  // },
-
   async GET(req, ctx) {
     const { global, id } = ctx.params;
     const item = await treesap.getGlobal(global);
@@ -47,7 +26,6 @@ export default function Projects(props: PageProps) {
             <a href={`/admin/globals/${global}/edit`} class="font-bold py-2 px-4 rounded outline outline-2 outline-offset-2">Edit</a>
           </div>
           <div class="flex gap-4">
-            
             <button
               type="submit"
               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"

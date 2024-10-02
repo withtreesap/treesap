@@ -18,7 +18,7 @@ export default function CollectionPage(props: PageProps<{ data: any, collectionD
   return (
     <div class="">
       <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold">{collectionData.labels.plural}</h1>
+        <h1 class="text-2xl font-bold">{collectionData.label}</h1>
         <a href={`/admin/collections/${collection}/create`} class="bg-blue-500 text-white px-4 py-2 rounded-md">Create</a>
       </div>
       <ul class="my-4 flex flex-col gap-4">

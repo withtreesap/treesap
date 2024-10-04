@@ -31,4 +31,4 @@ jobs:
         with:
           project: "treesap-astro-example"
           entrypoint: "server/entry.mjs"
-          root: "examples/astro-cms"
+          root: "examples/astro-cms/dist"

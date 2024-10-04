@@ -101,7 +101,7 @@ export class Treesap {
         return c.json({ message: 'Deleted' });
       })
 
-      this.app.delete(`/collections/${collection.slug}`, async (c) => {
+      this.app.delete(`/${collection.slug}`, async (c) => {
         console.log("deleting collection", collection.slug);
         await this.deleteCollection(collection.slug);
         return c.json({ message: 'Deleted' });

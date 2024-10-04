@@ -1,7 +1,4 @@
-import { Hono } from "@hono/hono";
-
 export interface TreesapOptions {
-  app: Hono;
   db: Deno.Kv;
 }
 

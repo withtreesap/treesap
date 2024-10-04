@@ -1,7 +1,7 @@
 {
   "name": "@treesap/treesap",
   "license": "MIT",
-  "version": "0.0.9", 
+  "version": "0.0.10", 
   "repository": {
     "type": "git",
     "url": "https://github.com/withtreesap/treesap.git"
@@ -15,8 +15,5 @@
   "exclude": [
     "examples"
   ],
-  "imports": {
-    "@hono/hono": "jsr:@hono/hono@^4.6.3"
-  },
   "lock": false
 }

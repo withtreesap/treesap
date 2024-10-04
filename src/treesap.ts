@@ -1,113 +1,16 @@
-import { Hono } from "@hono/hono";
 import { Collection, Global, TreesapOptions, CmsNavData } from './types/index.ts';
 
 export class Treesap {
-  app: Hono;
   db: Deno.Kv;
 
   private collections: Collection[] | null = null;
   private globals: Global[] | null = null;
 
-
   constructor(
     options: TreesapOptions
   ) {
-    this.app = options.app;
     this.db = options.db;
-    this.registerRoutes();
-  }
-
-  parseWhere(where: string) : Record<string, string> {
-    const conditions = where.split(';'); // Split multiple conditions
-    const query: Record<string, string> = {};
-    for (const condition of conditions) {
-      const [key, value] = condition.split('='); // Split key=value
-      query[key] = value;
-    }
-    return query;
-  }
-
-  async registerRoutes() {
-    this.collections = await this.getCollections(); 
-    this.globals = await this.getGlobals();
-    this.app.get("/", async (c) => {
-        // Use cached collections, if available
-        const collections = this.collections || await this.getCollections();
-        return c.json(collections);
-    });
-    this.api();
-  }
-
-  async api() { 
-    // Use cached collections
-    const collections = this.collections!;
-
-    collections.forEach(collection => {
-      this.app.get(`/${collection.slug}`, async (c) => {
-        // where is a string of key=value pairs separated by ;
-        // ex. name=John;age=30;city=New York
-        const where = c.req.query('where');
-        const entries = this.db.list({ prefix: [collection.slug] });
-        const items = [];
-
-        for await (const entry of entries) {
-          let match = true;
-          if (where) {
-            const query = this.parseWhere(where);
-            for (const key in query) {
-              
-              if ((entry.value as Record<string, string>)[key] !== query[key]) {
-                match = false;
-                break;
-              }
-            }
-          }
-          if (match) {
-            items.push(entry.value);
-          }
-        }
-        return c.json(items);
-      })
-
-      this.app.post(`/${collection.slug}`, async (c) => {
-        const data = await c.req.json()
-        const projectKey = [collection.slug, data.id];
-        const res = await this.db.atomic()
-          // check if the project already exists
-          .check({ key: projectKey, versionstamp: null })
-          .set(projectKey, data)
-          .commit();
-
-        if (!res.ok) {
-          throw new Error(`Failed to create ${collection.slug}`);
-        }
-
-        return c.json(data)
-      })
-
-      this.app.get(`/collections`, async (c) => {
-        return c.text("collections");
-      })
-
-      this.app.get(`/${collection.slug}/:id`, async (c) => {
-        const { id } = c.req.param();
-        const item = await this.findByID({ collection: collection.slug, id });
-        return c.json(item)
-      })
-
-      this.app.delete(`/${collection.slug}/:id`, async (c) => {
-        const { id } = c.req.param();
-        await this.delete({ collection: collection.slug, id });
-        return c.json({ message: 'Deleted' });
-      })
-
-      this.app.delete(`/${collection.slug}`, async (c) => {
-        console.log("deleting collection", collection.slug);
-        await this.deleteCollection(collection.slug);
-        return c.json({ message: 'Deleted' });
-      })
-    });
-  }
+  } 
 
   async getCmsNav(): Promise<CmsNavData[]> {
     // Use cached collections, if available
@@ -293,10 +196,6 @@ export class Treesap {
     id,
   }: { collection: string, id: string }) : Promise<any | undefined> {
     await this.db.delete([collection, id]);
-  }
-  // a fetch method that can be used to fetch data from the api
-  async fetch(req: Request ) : Promise<Response> {
-    return await this.app.fetch(req);
   }
 }
 

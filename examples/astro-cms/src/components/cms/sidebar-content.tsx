@@ -1,5 +1,5 @@
 import React from "react"
-import { Package, Users, Package2, Home, ShoppingCart, Bell, LineChart } from "lucide-react"
+import { Package, Users } from "lucide-react"
 
 
 export interface CmsNavData {

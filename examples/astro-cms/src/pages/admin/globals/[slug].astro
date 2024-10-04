@@ -1,0 +1,13 @@
+---
+import { Dashboard } from "@/components/cms/dashboard.tsx";
+import CmsLayout from "../../../layouts/CmsLayout.astro";
+import { treesap } from '../../../utils/treesap.ts'
+
+const navData = await treesap.getCmsNav()
+---
+
+<CmsLayout title="Admin">
+  <Dashboard navData={navData}>
+    <h1>Globals</h1>
+  </Dashboard>
+</CmsLayout>

@@ -13,6 +13,7 @@
       "npm:@radix-ui/react-slot@^1.1.0": "npm:@radix-ui/react-slot@1.1.0_@types+react@18.3.11_react@18.3.1",
       "npm:@types/react-dom@^18.3.0": "npm:@types/react-dom@18.3.0",
       "npm:@types/react@^18.3.10": "npm:@types/react@18.3.11",
+      "npm:astro": "npm:astro@4.15.11_@babel+core@7.25.7_typescript@5.6.2_vite@5.4.8_zod@3.23.8",
       "npm:astro@4.15.11": "npm:astro@4.15.11_@babel+core@7.25.7_typescript@5.6.2_vite@5.4.8_zod@3.23.8",
       "npm:astro@^4.15.10": "npm:astro@4.15.11_@babel+core@7.25.7_typescript@5.6.2_vite@5.4.8_zod@3.23.8",
       "npm:class-variance-authority@^0.7.0": "npm:class-variance-authority@0.7.0",

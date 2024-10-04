@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "deno --unstable-kv -A npm:astro dev",
-    "build": "astro build",
+    "build": "deno --unstable-kv -A npm:astro build",
     "preview": "deno run --allow-net --allow-read --allow-env ./dist/server/entry.mjs",
     "astro": "astro"
   },

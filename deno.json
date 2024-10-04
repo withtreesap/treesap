@@ -7,7 +7,8 @@
     "url": "https://github.com/withtreesap/treesap.git"
   },
   "tasks": {
-    "build:examples:fresh-cms": "deno run --unstable-kv -A examples/fresh-cms/dev.ts build"
+    "build:examples:fresh-cms": "deno run --unstable-kv -A examples/fresh-cms/dev.ts build",
+    "build:examples:astro-cms": "cd examples/astro-cms && deno task build"
   },
   "exports": {
     ".": "./src/index.ts"

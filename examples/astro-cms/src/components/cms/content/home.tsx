@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardHeader, CardTitle } from "../ui/card.tsx";
+import { Card, CardHeader, CardTitle } from "../..//ui/card.tsx";
 import type { CmsNavData } from "@treesap/treesap";
 
 export default function HomeContent({ navData }: { navData: CmsNavData[] }) {

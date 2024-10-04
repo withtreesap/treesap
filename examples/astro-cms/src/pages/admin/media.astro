@@ -2,15 +2,13 @@
 import { Dashboard } from "@/components/cms/dashboard";
 import CmsLayout from "../../layouts/CmsLayout.astro";
 import { treesap } from "../../utils/treesap.ts";
-import HomeContent from "@/components/cms/home-content.tsx";
+import HomeContent from "@/components/cms/content/home.tsx";
 
 const navData = await treesap.getCmsNav();
-
-const { route } = Astro.params;
 ---
 
 <CmsLayout title="Admin">
   <Dashboard navData={navData} client:only="react">
-    <HomeContent navData={navData} />
+    <h2>Media</h2>
   </Dashboard>
 </CmsLayout>

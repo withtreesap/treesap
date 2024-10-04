@@ -7,7 +7,7 @@ const navData = await treesap.getCmsNav()
 ---
 
 <CmsLayout title="Admin">
-  <Dashboard navData={navData}>
+  <Dashboard navData={navData} client:only>
     <h1>Collections</h1>
   </Dashboard>
 </CmsLayout>

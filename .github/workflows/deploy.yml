@@ -23,23 +23,12 @@ jobs:
         with:
           deno-version: v1.x
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-
-      - name: Change directory
-        run: "cd examples/astro-cms"
-
-      - name: Install step
-        run: "npm install"
-
       - name: Build step
-        run: "npm run build"
+        run: "deno task build:examples:astro-cms"
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "astro-treesap-example"
+          project: "treesap-astro-example"
           entrypoint: "server/entry.mjs"
           root: "examples/astro-cms"

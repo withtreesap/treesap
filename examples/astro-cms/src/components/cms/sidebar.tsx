@@ -13,7 +13,6 @@ export default function Sidebar({ navData }: { navData: CmsNavData[] }) {
             <Package2 className="h-6 w-6" />
             <span className="">Treesap CMS</span>
           </a>
-      
         </div>
         <div className="flex-1">
          <SidebarContent navData={navData} />

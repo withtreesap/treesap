@@ -7,10 +7,11 @@ import HomeContent from "@/components/cms/content/home";
 const navData = await treesap.getCmsNav();
 
 const { slug } = Astro.params;
+
 ---
 
 <CmsLayout title="Admin">
-  <Dashboard navData={navData} client:only="react">
+  <Dashboard navData={navData} title={slug} client:only="react">
     <div>Collection: {slug}</div>
   </Dashboard>
 </CmsLayout>

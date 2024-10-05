@@ -8,10 +8,11 @@ const navData = await treesap.getCmsNav();
 
 const { slug } = Astro.params;
 
+const collection = await treesap.getCollection(slug);
 ---
 
 <CmsLayout title="Admin">
-  <Dashboard navData={navData} title={slug} client:only="react">
-    <div>Collection: {slug}</div>
+  <Dashboard navData={navData} title={collection.name} client:only="react">
+    <div>{JSON.stringify(collection)}</div>
   </Dashboard>
 </CmsLayout>

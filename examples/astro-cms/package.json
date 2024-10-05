@@ -23,7 +23,7 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.1.1",
     "@std/ulid": "npm:@jsr/std__ulid@^1.0.0-rc.4",
-    "@treesap/treesap": "npm:@jsr/treesap__treesap@^0.0.11",
+    "@treesap/treesap": "npm:@jsr/treesap__treesap@^0.0.12",
     "@types/react": "^18.3.10",
     "@types/react-dom": "^18.3.0",
     "astro": "^4.15.10",

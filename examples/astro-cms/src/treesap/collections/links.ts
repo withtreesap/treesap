@@ -1,13 +1,9 @@
 import type { Collection } from "@treesap/treesap";
 
 export const links: Collection = {
+  name: "Links",
   slug: "links",
-  label: "Links",
   fields: [
-    {
-      name: "title",
-      label: "Title",
-      type: "string",
-    },
+    
   ],
 };

@@ -1,8 +1,8 @@
 import type { Global } from "@treesap/treesap";
 
 export const socials: Global = {
+  name: "Socials",
   slug: "socials",
-  label: "Socials",
   fields: [
     {
       name: "facebook",

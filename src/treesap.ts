@@ -2,15 +2,16 @@ import { Collection, Global, TreesapOptions, CmsNavData } from './types/index.ts
 
 export class Treesap {
   db: Deno.Kv;
-
-  private collections: Collection[] | null = null;
-  private globals: Global[] | null = null;
+  collections: Collection[] | null = null;
+  globals: Global[] | null = null;
 
   constructor(
     options: TreesapOptions
   ) {
     this.db = options.db;
-  } 
+    this.collections = options.collections;
+    this.globals = options.globals;
+  }
 
   async getCmsNav(): Promise<CmsNavData[]> {
     // Use cached collections, if available
@@ -40,7 +41,7 @@ export class Treesap {
     const globals = [];
     const result = this.db.list({ prefix: ["globals"] });
     for await (const item of result) {
-        globals.push(item.value as Global);
+      globals.push(item.value as Global);
     }
     return globals;
   }
@@ -48,7 +49,7 @@ export class Treesap {
   async getGlobal(slug: string): Promise<Global | undefined> {
     const result = await this.db.get(["globals", slug]);
     return result.value as Global;
-  } 
+  }
 
   async createGlobal(global: Global): Promise<any | undefined> {
     const res = await this.db.atomic()
@@ -60,12 +61,16 @@ export class Treesap {
     return res;
   }
 
+  async deleteGlobal(slug: string): Promise<any | undefined> {
+    await this.db.delete(["globals", slug]);
+  }
+
   // Collections
   async getCollections(): Promise<Collection[]> {
     const collections = [];
     const result = this.db.list({ prefix: ["collections"] });
     for await (const item of result) {
-        collections.push(item.value as Collection);
+      collections.push(item.value as Collection);
     }
 
     return collections
@@ -77,19 +82,19 @@ export class Treesap {
     return collections.find(c => c.slug === collection);
   }
 
-  async createCollection(collection: Collection) : Promise<any | undefined> {
+  async createCollection(collection: Collection): Promise<any | undefined> {
     const res = await this.db.atomic()
       .set(["collections", collection.slug], collection)
       .commit();
     // clear the cached collections
     if (res.ok) {
-      this.collections = null; 
+      this.collections = null;
     }
 
     return res;
-  } 
+  }
 
-  async updateCollection(collection: Collection) : Promise<any | undefined> {
+  async updateCollection(collection: Collection): Promise<any | undefined> {
 
     // get the existing collection
     const existing = await this.db.get(["collections", collection.slug]);
@@ -108,20 +113,19 @@ export class Treesap {
 
     // merge the existing collection with the new collection
     const updated = { ...existing, ...collection };
-    
+
     const res = await this.db.atomic()
       .set(["collections", collection.slug], updated)
       .commit();
 
     // clear the cached collections
     if (res.ok) {
-      this.collections = null; 
+      this.collections = null;
     }
     return res;
   }
 
-  async deleteCollection(collection: string) : Promise<any | undefined> {
-    console.log("deleting collection", collection);
+  async deleteCollection(collection: string): Promise<any | undefined> {
     // find the collection
     const collectionItem = await this.getCollection(collection);
     if (!collectionItem) {
@@ -133,16 +137,16 @@ export class Treesap {
       await this.delete({ collection: collectionItem.slug, id: item.id });
     }
     // delete the collection
-    await this.db.delete([ "collections", collectionItem.slug]);
+    await this.db.delete(["collections", collectionItem.slug]);
     // clear the cached collections
     this.collections = null;
-    
+
   }
 
   // a find method that can be used to find all items in a collection
   async find({
     collection,
-  } : { collection: string }) : Promise<any[]> {
+  }: { collection: string }): Promise<any[]> {
     const entries = this.db.list({ prefix: [collection] });
     const items: any[] = [];
 
@@ -157,7 +161,7 @@ export class Treesap {
   async findByID({
     collection,
     id,
-  }: { collection: string, id: string }) : Promise<any | undefined> {
+  }: { collection: string, id: string }): Promise<any | undefined> {
     const item = await this.db.get([collection, id]);
     return item;
   }
@@ -165,11 +169,11 @@ export class Treesap {
   async create({
     collection,
     data,
-  }: { collection: string, data: any }) : Promise<any | undefined> {
+  }: { collection: string, data: any }): Promise<any | undefined> {
     const res = await this.db.atomic()
       .set([collection, data.id], data)
       .commit();
-    
+
     return res;
   }
   // an update method that can be used to update data directly in the kv database
@@ -177,7 +181,7 @@ export class Treesap {
     collection,
     id,
     data,
-  }: { collection: string, id: string, data: any }) : Promise<any | undefined> {
+  }: { collection: string, id: string, data: any }): Promise<any | undefined> {
     // get the existing data
     const existing = await this.db.get([collection, id]);
     if (!existing) {
@@ -194,7 +198,7 @@ export class Treesap {
   async delete({
     collection,
     id,
-  }: { collection: string, id: string }) : Promise<any | undefined> {
+  }: { collection: string, id: string }): Promise<any | undefined> {
     await this.db.delete([collection, id]);
   }
 }

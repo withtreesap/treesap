@@ -1,5 +1,7 @@
 export interface TreesapOptions {
   db: Deno.Kv;
+  collections: Collection[];
+  globals: Global[];
 }
 
 export interface Collection {
@@ -10,9 +12,10 @@ export interface Collection {
 
 export interface Field {
   name: string;
+  description?: string;
   type: string;
   label: string;
-  value: string;
+  required?: boolean;
 }
 
 export interface Global {

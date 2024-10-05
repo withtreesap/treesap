@@ -5,8 +5,8 @@ export interface TreesapOptions {
 }
 
 export interface Collection {
+  name: string;
   slug: string;
-  label: string;
   fields: Field[];
 }
 
@@ -19,13 +19,13 @@ export interface Field {
 }
 
 export interface Global {
+  name: string;
   slug: string;
-  label: string;
   fields: Field[];
 }
 
 export interface CmsNavData {
   type: "collection" | "global";
+  name: string;
   slug: string;
-  label: string;
 }       

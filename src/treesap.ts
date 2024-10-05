@@ -11,6 +11,38 @@ export class Treesap {
     this.db = options.db;
     this.collections = options.collections;
     this.globals = options.globals;
+
+    // Initialize collections and globals if provided in options
+    this.initCollections();
+    this.initGlobals();
+  }
+
+  async initCollections() {
+    // if collections are provided in the options, initialize them
+    if (this.collections && this.collections.length > 0) {
+      const existingCollections = await this.getCollections();
+      // if a collection doesn't exist, create it
+      for (const collection of this.collections) {
+        if (!existingCollections.find((c) => c.slug === collection.slug)) {
+          await this.createCollection(collection);
+        }
+      }
+      this.collections = null; // Clear cache to force refresh
+    }
+  }
+
+  async initGlobals() {
+    // if globals are provided in the options, initialize them
+    if (this.globals && this.globals.length > 0) {
+      const existingGlobals = await this.getGlobals();
+      // if a global doesn't exist, create it
+      for (const global of this.globals) {
+        if (!existingGlobals.find((g) => g.slug === global.slug)) {
+          await this.createGlobal(global);
+        }
+      }
+      this.globals = null; // Clear cache to force refresh
+    }
   }
 
   async getCmsNav(): Promise<CmsNavData[]> {
@@ -21,14 +53,14 @@ export class Treesap {
     for (const collection of collections) {
       nav.push({
         type: "collection",
-        label: collection.label,
+        name: collection.name,
         slug: collection.slug,
       })
     }
     for (const global of globals) {
       nav.push({
         type: "global",
-        label: global.label,
+        name: global.name,
         slug: global.slug,
       })
     }
@@ -202,4 +234,6 @@ export class Treesap {
     await this.db.delete([collection, id]);
   }
 }
+
+
 

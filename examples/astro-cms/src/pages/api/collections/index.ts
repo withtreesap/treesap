@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { treesap } from "@/utils/treesap.ts";
+import { treesap } from "@/treesap/treesap";
 
 export const POST: APIRoute = async ({ params, request }) => {
   const collection = await request.json();

@@ -42,12 +42,7 @@ export function SidebarContent({ navData }: SidebarContentProps) {
 
       <div className="flex items-center justify-between">
         <h3 className="text-muted-foreground">Globals</h3>
-        <a
-          href="/admin/globals/create"
-          className="flex items-center justify-center p-1 rounded hover:bg-gray-200"
-        >
-          <Plus className="h-4 w-4" />
-        </a>
+
       </div>
       {navData.filter(item => item.type === "global").length > 0 && (
         <div className="flex flex-col gap-2">
@@ -67,12 +62,7 @@ export function SidebarContent({ navData }: SidebarContentProps) {
       )}
       <div className="flex items-center justify-between">
         <h3 className="text-muted-foreground">Collections</h3>
-        <a
-          href="/admin/collections/create"
-          className="flex items-center justify-center p-1 rounded hover:bg-gray-200"
-        >
-          <Plus className="h-4 w-4" />
-        </a>
+
       </div>
       {navData.filter(item => item.type === "collection").length > 0 && (
         <div className="flex flex-col gap-2">

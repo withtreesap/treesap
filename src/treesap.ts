@@ -20,12 +20,9 @@ export class Treesap {
   async initCollections() {
     // if collections are provided in the options, initialize them
     if (this.collections && this.collections.length > 0) {
-      const existingCollections = await this.getCollections();
-      // if a collection doesn't exist, create it
+      // create all collections
       for (const collection of this.collections) {
-        if (!existingCollections.find((c) => c.slug === collection.slug)) {
-          await this.createCollection(collection);
-        }
+        await this.createCollection(collection);
       }
       this.collections = null; // Clear cache to force refresh
     }
@@ -34,12 +31,9 @@ export class Treesap {
   async initGlobals() {
     // if globals are provided in the options, initialize them
     if (this.globals && this.globals.length > 0) {
-      const existingGlobals = await this.getGlobals();
-      // if a global doesn't exist, create it
+      // create all globals
       for (const global of this.globals) {
-        if (!existingGlobals.find((g) => g.slug === global.slug)) {
-          await this.createGlobal(global);
-        }
+        await this.createGlobal(global);
       }
       this.globals = null; // Clear cache to force refresh
     }

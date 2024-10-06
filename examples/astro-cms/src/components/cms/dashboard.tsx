@@ -1,26 +1,21 @@
 import React from "react"
 import Sidebar from "./sidebar.tsx"
 import Header from "./header.tsx"
-import Main from "./main.tsx"
 import type { CmsNavData } from '@treesap/treesap'
 
 export function Dashboard({
   navData,
-  title,
   children,
 }: {
   navData: CmsNavData[]
   children: React.ReactNode
-  title?: string
 }) {
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <Sidebar navData={navData} />
       <div className="flex flex-col">
         <Header navData={navData} />
-        <Main title={title}>
-          {children}
-        </Main>
+        {children}
       </div>
     </div>
   )

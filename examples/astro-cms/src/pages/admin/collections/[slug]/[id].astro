@@ -1,0 +1,32 @@
+---
+import CmsForm from "@/components/cms/cms-form";
+import { Dashboard } from "@/components/cms/dashboard";
+import Main from "@/components/cms/main";
+import CmsLayout from "@/layouts/CmsLayout.astro";
+import { treesap } from "@/treesap/treesap";
+
+const navData = await treesap.getCmsNav();
+
+const { slug, id } = Astro.params;
+
+const collection = await treesap.getCollection(slug);
+const item = await treesap.findByID({
+  collection: slug,
+  id: id,
+});
+
+console.log(item.value);
+---
+
+<CmsLayout title="Admin">
+  <Dashboard navData={navData} client:only="react">
+    <Main
+      client:only="react"
+      title={collection.name}
+      buttonText="Add"
+      buttonHref={`/admin/collections/${slug}/create`}
+    >
+      <CmsForm client:only="react" collection={collection} item={item.value} />
+    </Main>
+  </Dashboard>
+</CmsLayout>

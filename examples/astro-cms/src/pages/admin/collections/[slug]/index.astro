@@ -1,0 +1,26 @@
+---
+import { Dashboard } from "@/components/cms/dashboard";
+import ItemsList from "@/components/cms/items-list";
+import Main from "@/components/cms/main";
+import CmsLayout from "@/layouts/CmsLayout.astro";
+import { treesap } from "@/treesap/treesap";
+const navData = await treesap.getCmsNav();
+
+const { slug } = Astro.params;
+
+const collection = await treesap.getCollection(slug);
+const items = await treesap.find({ collection: slug });
+---
+
+<CmsLayout title="Admin">
+  <Dashboard navData={navData} client:only="react">
+    <Main
+      client:only="react"
+      title={collection.name}
+      buttonText="Add"
+      buttonHref={`/admin/collections/${slug}/create`}
+    >
+      <ItemsList client:only="react" collection={collection} items={items} />
+    </Main>
+  </Dashboard>
+</CmsLayout>

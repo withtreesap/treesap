@@ -12,14 +12,13 @@ export function SidebarContent({ navData }: SidebarContentProps) {
 
   return (
     <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-2">
-
-      <a
+      {/* <a
         href={`/admin/settings`}
         className={`flex items-center gap-3 rounded-lg px-3 py-2 t transition-all  ${location.pathname === `/admin/settings` ? "bg-primary/10 text-primary" : ``}`}
       >
         <Settings className="h-4 w-4" />
         Settings
-      </a>
+      </a> */}
       <a
         href={`/admin/users`}
         className={`flex items-center gap-3 rounded-lg px-3 py-2 t transition-all  ${location.pathname === `/admin/users` ? "bg-primary/10 text-primary" : ``}`}
@@ -65,7 +64,7 @@ export function SidebarContent({ navData }: SidebarContentProps) {
               <a
                 key={item.slug}
                 href={`/admin/globals/${item.slug}`}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 t transition-all  ${location.pathname === `/admin/globals/${item.slug}` ? "bg-primary/10 text-primary" : ``}`}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all  ${location.pathname === `/admin/globals/${item.slug}` ? "bg-primary/10 text-primary" : ``}`}
               >
                 <Book className="h-4 w-4" />
                 {item.name}

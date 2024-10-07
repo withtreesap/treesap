@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getKV } from "@/treesap/treesap";
+import { getKV } from "@/treesap/treesap.config";
 
 export const GET: APIRoute = async () => {
   const all = await getKV();

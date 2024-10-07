@@ -3,7 +3,7 @@ import type { Field } from "@treesap/types";
 import TextField from './text-field';
 import TextareaField from './textarea-field';
 import SlugField from './slug-field';
-
+import MarkdownField from './markdown-field';
 interface FieldBuilderProps {
   fields: Field[];
   formData: Record<string, string>;
@@ -36,6 +36,15 @@ const FieldBuilder: React.FC<FieldBuilderProps> = ({ fields, formData, onChange 
           case 'slug':
             return (
               <SlugField
+                key={field.name}
+                model={field}
+                onChange={onChange}
+                value={formData[field.name] || ''}
+              />
+            );
+          case 'markdown':
+            return (
+              <MarkdownField
                 key={field.name}
                 model={field}
                 onChange={onChange}

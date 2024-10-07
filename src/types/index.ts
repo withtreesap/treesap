@@ -16,6 +16,7 @@ export interface Field {
   type: string;
   label: string;
   required?: boolean;
+  basedOn?: string;
 }
 
 export interface Global {

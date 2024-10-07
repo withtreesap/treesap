@@ -1,8 +1,7 @@
 ---
 import { Dashboard } from "@/components/cms/dashboard";
 import CmsLayout from "../../layouts/CmsLayout.astro";
-import { treesap } from "../../treesap/treesap";
-import HomeContent from "@/components/cms/content/home.tsx";
+import { treesap } from "../../treesap/treesap.config.ts";
 
 const navData = await treesap.getCmsNav();
 ---

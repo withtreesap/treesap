@@ -26,6 +26,7 @@
       "npm:next-themes@^0.3.0": "npm:next-themes@0.3.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
       "npm:react-beautiful-dnd@^13.1.1": "npm:react-beautiful-dnd@13.1.1_react@18.3.1_react-dom@18.3.1__react@18.3.1",
       "npm:react-dom@^18.3.1": "npm:react-dom@18.3.1_react@18.3.1",
+      "npm:react-textarea-autosize@^8.5.3": "npm:react-textarea-autosize@8.5.3_react@18.3.1",
       "npm:react@^18.3.1": "npm:react@18.3.1",
       "npm:sonner@^1.5.0": "npm:sonner@1.5.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
       "npm:tailwind-merge@^2.5.2": "npm:tailwind-merge@2.5.3",
@@ -3360,6 +3361,15 @@
           "tslib": "tslib@2.7.0"
         }
       },
+      "react-textarea-autosize@8.5.3_react@18.3.1": {
+        "integrity": "sha512-XT1024o2pqCuZSuBt9FwHlaDeNtVrtCXu0Rnz88t1jUGheCLa3PhjE1GH8Ctm2axEtvdCl5SUHYschyQ0L5QHQ==",
+        "dependencies": {
+          "@babel/runtime": "@babel/runtime@7.25.7",
+          "react": "react@18.3.1",
+          "use-composed-ref": "use-composed-ref@1.3.0_react@18.3.1",
+          "use-latest": "use-latest@1.2.1_react@18.3.1"
+        }
+      },
       "react@18.3.1": {
         "integrity": "sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==",
         "dependencies": {
@@ -3955,6 +3965,25 @@
           "tslib": "tslib@2.7.0"
         }
       },
+      "use-composed-ref@1.3.0_react@18.3.1": {
+        "integrity": "sha512-GLMG0Jc/jiKov/3Ulid1wbv3r54K9HlMW29IWcDFPEqFkSO2nS0MuefWgMJpeHQ9YJeXDL3ZUF+P3jdXlZX/cQ==",
+        "dependencies": {
+          "react": "react@18.3.1"
+        }
+      },
+      "use-isomorphic-layout-effect@1.1.2_react@18.3.1": {
+        "integrity": "sha512-49L8yCO3iGT/ZF9QttjwLF/ZD9Iwto5LnH5LmEdk/6cFmXddqi2ulF0edxTwjj+7mqvpVVGQWvbXZdn32wRSHA==",
+        "dependencies": {
+          "react": "react@18.3.1"
+        }
+      },
+      "use-latest@1.2.1_react@18.3.1": {
+        "integrity": "sha512-xA+AVm/Wlg3e2P/JiItTziwS7FK92LWrDB0p+hgXloIMuVCeJJ8v6f0eeHyPZaJrM+usM1FkFfbNCrJGs8A/zw==",
+        "dependencies": {
+          "react": "react@18.3.1",
+          "use-isomorphic-layout-effect": "use-isomorphic-layout-effect@1.1.2_react@18.3.1"
+        }
+      },
       "use-memo-one@1.1.3_react@18.3.1": {
         "integrity": "sha512-g66/K7ZQGYrI6dy8GLpVcMsBp4s17xNkYJVSMvTEevGy3nDxHOfE6z8BVE22+5G5x7t3+bhzrlTDB7ObrEE0cQ==",
         "dependencies": {
@@ -4314,6 +4343,7 @@
         "npm:next-themes@^0.3.0",
         "npm:react-beautiful-dnd@^13.1.1",
         "npm:react-dom@^18.3.1",
+        "npm:react-textarea-autosize@^8.5.3",
         "npm:react@^18.3.1",
         "npm:sonner@^1.5.0",
         "npm:tailwind-merge@^2.5.2",

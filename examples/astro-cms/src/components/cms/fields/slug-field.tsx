@@ -11,7 +11,6 @@ interface SlugFieldProps   {
 
 export default function SlugField({ model, onChange, value }: SlugFieldProps) {
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const slug = e.target.value.toLowerCase().replace(/[^a-z0-9-]+/g, '-'); // Only replace non-alphanumeric characters with a single dash
     onChange(model.name, slug)

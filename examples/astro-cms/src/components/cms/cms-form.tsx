@@ -5,7 +5,6 @@ import TextareaField from './fields/textarea-field'
 import FieldBuilder from './fields/field-builder'
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { ulid } from '@std/ulid'
 import { toast } from "sonner"
 
 
@@ -103,6 +102,8 @@ export default function CmsForm({ global, collection, item }: CmsFormProps) {
       id: item.id,
     });
 
+    console.log('url', url);
+
     const res = await fetch(url, { method: 'DELETE' });
 
     if (!res.ok) {
@@ -120,7 +121,7 @@ export default function CmsForm({ global, collection, item }: CmsFormProps) {
       <form onSubmit={handleSubmit}>
         <div className="flex justify-end mb-4 gap-2">
           {item && (
-            <Button variant="outline" onClick={handleDelete}>
+            <Button type="button" variant="outline" onClick={handleDelete}>
               Delete
             </Button>
           )}

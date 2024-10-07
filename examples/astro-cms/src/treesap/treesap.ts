@@ -11,3 +11,9 @@ export const treesap = new Treesap({
   collections: [links, pages, projects],
   globals: [socials],
 });
+
+
+export const getKV = async () => {
+  return await Array.fromAsync(kv.list({ prefix: [] }));
+};
+

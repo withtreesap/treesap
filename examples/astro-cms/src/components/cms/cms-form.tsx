@@ -51,6 +51,8 @@ export default function CmsForm({ collection, item }: CmsFormProps) {
         }),
       });  
     } else {
+      console.log('creating new item');
+      console.log('data', data);
       res = await fetch(`/api/collections/${collection.slug}`, {
         method: 'POST',
         headers: {

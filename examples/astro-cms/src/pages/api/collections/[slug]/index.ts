@@ -1,14 +1,6 @@
 import type { APIRoute } from 'astro';
 import { treesap } from "@/treesap/treesap";
 
-export const DELETE: APIRoute = async ({ params, request }) => {
-  const slug = params.slug;
-  await treesap.deleteCollection(slug);
-  return new Response(
-    JSON.stringify({ success: true })
-  )
-}
-
 export const POST: APIRoute = async ({ params, request }) => {
   const slug = params.slug;
   const data = await request.json();

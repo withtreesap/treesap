@@ -13,7 +13,7 @@ interface CmsFormProps {
 }
 
 export default function CmsForm({ collection, item }: CmsFormProps) {
-  const [open, setOpen] = useState(true)
+  
   const [formData, setFormData] = useState<Record<string, string>>({})
 
   useEffect(() => {
@@ -33,41 +33,25 @@ export default function CmsForm({ collection, item }: CmsFormProps) {
 
     const data = formData;
 
-    let res;
-    let editing = false;
+    const editing = !!item;
 
-    if (item) {
-      editing = true;
-    }
-
-    if (editing) {
-      res = await fetch(`/api/collections/${collection.slug}/${data.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(
-          data,
-        ),
-      });
-    } else {
-      console.log('creating new item');
-      console.log('data', data);
-      res = await fetch(`/api/collections/${collection.slug}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(
-          data,
-        ),
-      });
-    }
+    const res = await fetch(`/api/collections/${collection.slug}${editing ? `/${data.id}` : ''}`, {
+      method: editing ? 'PUT' : 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data),
+    });
 
     if (!res.ok) {
       console.error('Failed to submit form:', res.statusText);
     } else {
       toast.success('Saved');
+      if (editing) {
+        window.location.reload();
+      } else {
+        window.location.href = `/admin/collections/${collection.slug}`;
+      }
     }
   }
 

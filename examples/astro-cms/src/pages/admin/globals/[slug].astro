@@ -1,16 +1,26 @@
 ---
+import CmsForm from "@/components/cms/cms-form";
 import { Dashboard } from "@/components/cms/dashboard";
+import Main from "@/components/cms/main";
 import CmsLayout from "@/layouts/CmsLayout.astro";
 import { treesap } from "@/treesap/treesap";
-import HomeContent from "@/components/cms/content/home";
 
 const navData = await treesap.getCmsNav();
 
-const { slug } = Astro.params;
+const { slug, id } = Astro.params;
+
+const global = await treesap.getGlobal(slug);
+
+console.log('global', global);
 ---
 
 <CmsLayout title="Admin">
   <Dashboard navData={navData} client:only="react">
-    <div>Global: {slug}</div>
+    <Main
+      client:only="react"
+      title={global.name}
+    >
+      <CmsForm client:only="react" global={global} />
+    </Main>
   </Dashboard>
 </CmsLayout>

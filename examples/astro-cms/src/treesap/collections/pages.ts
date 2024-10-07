@@ -5,14 +5,19 @@ export const pages: Collection = {
   slug: "pages",
   fields: [
     {
+      name: "slug",
+      label: "Slug",
+      type: "slug",
+    },
+    {
       name: "title",
       label: "Title",
       type: "text",
     },
     {
-      name: "slug",
-      label: "Slug",
-      type: "text",
+      name: "content",
+      label: "Content",
+      type: "textarea",
     },
   ],
 };

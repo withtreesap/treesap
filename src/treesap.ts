@@ -1,11 +1,11 @@
 import { Collection, Global, TreesapOptions, CmsNavData } from './types/index.ts';
-import {ulid} from '@std/ulid';
+import { ulid } from '@std/ulid';
 
 export class Treesap {
   db: Deno.Kv;
   collections: Collection[] | null = null;
   globals: Global[] | null = null;
-  
+
 
   constructor(
     options: TreesapOptions

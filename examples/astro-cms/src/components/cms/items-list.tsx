@@ -19,11 +19,11 @@ interface Item {
 
 export default function ItemsList({ collection, items }: Props) {
 
-  const fields = collection.fields;
+  const fields = collection.fields.slice(0, 3);
   return (
     <div className="container mx-auto">
-      <Table>
-        <TableHeader className="bg-gray-50">
+      <Table className="table-auto">
+        <TableHeader className="bg-gray-50 sticky top-0">
           <TableRow>
             <TableHead className="w-10">ID</TableHead>
             {fields.map((field) => (
@@ -40,7 +40,7 @@ export default function ItemsList({ collection, items }: Props) {
                 </a>
               </TableCell>
               {fields.map((field) => (
-                <TableCell key={field.name}>{item[field.name]}</TableCell>
+                <TableCell className="whitespace-nowrap" key={field.name}>{item[field.name]}</TableCell>
               ))}
             </TableRow>
           ))}

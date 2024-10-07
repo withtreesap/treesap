@@ -36,7 +36,7 @@ export default function CmsForm({ collection, item }: CmsFormProps) {
     let res;
     let editing = false;
 
-    if (item) { 
+    if (item) {
       editing = true;
     }
 
@@ -46,10 +46,10 @@ export default function CmsForm({ collection, item }: CmsFormProps) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
+        body: JSON.stringify(
           data,
-        }),
-      });  
+        ),
+      });
     } else {
       console.log('creating new item');
       console.log('data', data);
@@ -58,9 +58,9 @@ export default function CmsForm({ collection, item }: CmsFormProps) {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
+        body: JSON.stringify(
           data,
-        }),
+        ),
       });
     }
 

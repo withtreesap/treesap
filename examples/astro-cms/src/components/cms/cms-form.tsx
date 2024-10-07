@@ -4,6 +4,8 @@ import TextField from './fields/text-field'
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { ulid } from '@std/ulid'
+import { toast } from "sonner"
+
 
 interface CmsFormProps {
   collection: Collection
@@ -15,47 +17,66 @@ export default function CmsForm({ collection, item }: CmsFormProps) {
   const [formData, setFormData] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    setFormData(item || {})
-  }, [item])
+    if (item) {
+      setFormData(item)
+    } else {
+      setFormData({})
+    }
+  }, [item, collection])
 
   const handleChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
 
-    const data = { ...formData };
+    const data = formData;
 
-    if (!data.id) {
-      data.id = ulid();
+    let res;
+    let editing = false;
+
+    if (item) { 
+      editing = true;
     }
 
-    if (item) {
+    if (editing) {
+      res = await fetch(`/api/collections/${collection.slug}/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          data,
+        }),
+      });  
+    } else {
+      res = await fetch(`/api/collections/${collection.slug}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          data,
+        }),
+      });
     }
-
-    const res = await fetch(`/api/collections/${collection.slug}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        collection: collection.slug,
-        id: data.id,
-        data,
-      }),
-    });
 
     if (!res.ok) {
       console.error('Failed to submit form:', res.statusText);
     } else {
-      console.log('Form submitted successfully:', await res.json());
+      toast.success('Saved');
     }
   }
 
   return (
     <div className="container mx-auto p-4">
       <form onSubmit={handleSubmit}>
+        <div className="flex justify-end mb-4">
+          <Button type="submit">
+            Save
+          </Button>
+        </div>
         <div className="flex flex-col gap-4">
           {collection.fields.map(field => (
             <TextField
@@ -66,7 +87,6 @@ export default function CmsForm({ collection, item }: CmsFormProps) {
             />
           ))}
         </div>
-        
       </form>
     </div>
   )

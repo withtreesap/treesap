@@ -10,6 +10,8 @@ const { slug } = Astro.params;
 
 const collection = await treesap.getCollection(slug);
 const items = await treesap.find({ collection: slug });
+
+console.log('items', items);
 ---
 
 <CmsLayout title="Admin">

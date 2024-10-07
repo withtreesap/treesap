@@ -7,11 +7,13 @@ export default function Main({
   title,
   buttonText,
   buttonHref,
+  buttonOnClick,
   children
 }: {
   title: string;
   buttonText?: string;
   buttonHref?: string;
+  buttonOnClick?: () => void;
   children: React.ReactNode
 }) {
   return (
@@ -19,9 +21,13 @@ export default function Main({
       {title && (
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold md:text-2xl">{title}</h1>
+          {buttonText && buttonOnClick && (
+            <Button onClick={buttonOnClick}>
+              {buttonText}
+            </Button>
+          )}
           {buttonText && buttonHref && (
             <a href={buttonHref} className={buttonVariants({variant: "default"})}>
-              <PlusIcon className="mr-2 h-4 w-4" />
               {buttonText}
             </a>
           )}

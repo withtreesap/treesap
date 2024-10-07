@@ -8,7 +8,7 @@
       "npm:@deno/astro-adapter@^0.1.3": "npm:@deno/astro-adapter@0.1.3_astro@4.15.11__@babel+core@7.25.7__typescript@5.6.2__vite@5.4.8__zod@3.23.8_typescript@5.6.2",
       "npm:@jsr/hono__hono@^4.6.3": "npm:@jsr/hono__hono@4.6.3",
       "npm:@jsr/std__ulid@^1.0.0-rc.4": "npm:@jsr/std__ulid@1.0.0-rc.4",
-      "npm:@jsr/treesap__treesap@^0.0.12": "npm:@jsr/treesap__treesap@0.0.12",
+      "npm:@jsr/treesap__treesap@^0.0.13": "npm:@jsr/treesap__treesap@0.0.13",
       "npm:@radix-ui/react-collapsible@^1.1.1": "npm:@radix-ui/react-collapsible@1.1.1_@types+react@18.3.11_@types+react-dom@18.3.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
       "npm:@radix-ui/react-dialog@^1.1.2": "npm:@radix-ui/react-dialog@1.1.2_@types+react@18.3.11_@types+react-dom@18.3.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
       "npm:@radix-ui/react-dropdown-menu@^2.1.2": "npm:@radix-ui/react-dropdown-menu@2.1.2_@types+react@18.3.11_@types+react-dom@18.3.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
@@ -23,9 +23,11 @@
       "npm:class-variance-authority@^0.7.0": "npm:class-variance-authority@0.7.0",
       "npm:clsx@^2.1.1": "npm:clsx@2.1.1",
       "npm:lucide-react@^0.447.0": "npm:lucide-react@0.447.0_react@18.3.1",
+      "npm:next-themes@^0.3.0": "npm:next-themes@0.3.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
       "npm:react-beautiful-dnd@^13.1.1": "npm:react-beautiful-dnd@13.1.1_react@18.3.1_react-dom@18.3.1__react@18.3.1",
       "npm:react-dom@^18.3.1": "npm:react-dom@18.3.1_react@18.3.1",
       "npm:react@^18.3.1": "npm:react@18.3.1",
+      "npm:sonner@^1.5.0": "npm:sonner@1.5.0_react@18.3.1_react-dom@18.3.1__react@18.3.1",
       "npm:tailwind-merge@^2.5.2": "npm:tailwind-merge@2.5.3",
       "npm:tailwindcss-animate@^1.0.7": "npm:tailwindcss-animate@1.0.7_tailwindcss@3.4.13__postcss@8.4.47",
       "npm:tailwindcss@^3.4.13": "npm:tailwindcss@3.4.13_postcss@8.4.47",
@@ -736,8 +738,8 @@
         "integrity": "sha512-dJPkGZitKk31EOSyP64SAlTXdGPlzu4CXOBIYwq+0zSeATGMjB4ZVgGjrUqUp/YZEUah6XwX1WLc9krGHqQjPw==",
         "dependencies": {}
       },
-      "@jsr/treesap__treesap@0.0.12": {
-        "integrity": "sha512-uYZjQ73Dx0921SVER/Y+3IfPf05zzL+X41rVdEuUetsRFg1FfIZ3hPVplymgIF4gf/hKqfwwkVmnJUsMYCuFQw==",
+      "@jsr/treesap__treesap@0.0.13": {
+        "integrity": "sha512-+GlwqNWiVstdUxnNp/UBI6C+CfAluKPURbhrwNWr5J7JrV1LJ/VGn51L+sDg1+F9jvDMJ995KwACHwjWQs2POA==",
         "dependencies": {}
       },
       "@nodelib/fs.scandir@2.1.5": {
@@ -3020,6 +3022,13 @@
         "integrity": "sha512-Z4SmBUweYa09+o6pG+eASabEpP6QkQ70yHj351pQoEXIs8uHbaU2DWVmzBANKgflPa47A50PtB2+NgRpQvr7vA==",
         "dependencies": {}
       },
+      "next-themes@0.3.0_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
+        "integrity": "sha512-/QHIrsYpd6Kfk7xakK4svpDI5mmXP0gfvCoJdGpZQ2TOrQZmsW0QxjaiLn8wbIKjtm4BTSqLoix4lxYYOnLJ/w==",
+        "dependencies": {
+          "react": "react@18.3.1",
+          "react-dom": "react-dom@18.3.1_react@18.3.1"
+        }
+      },
       "nlcst-to-string@4.0.0": {
         "integrity": "sha512-YKLBCcUYKAg0FNlOBT6aI91qFmSiFKiluk655WzPF+DDMA02qIyy8uiRqI8QXtcFpEvll12LpL5MXqEmAZ+dcA==",
         "dependencies": {
@@ -3640,6 +3649,13 @@
       "sisteransi@1.0.5": {
         "integrity": "sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==",
         "dependencies": {}
+      },
+      "sonner@1.5.0_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
+        "integrity": "sha512-FBjhG/gnnbN6FY0jaNnqZOMmB73R+5IiyYAw8yBj7L54ER7HB3fOSE5OFiQiE2iXWxeXKvg6fIP4LtVppHEdJA==",
+        "dependencies": {
+          "react": "react@18.3.1",
+          "react-dom": "react-dom@18.3.1_react@18.3.1"
+        }
       },
       "source-map-js@1.2.1": {
         "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==",
@@ -4275,7 +4291,7 @@
         "npm:@deno/astro-adapter@^0.1.3",
         "npm:@jsr/hono__hono@^4.6.3",
         "npm:@jsr/std__ulid@^1.0.0-rc.4",
-        "npm:@jsr/treesap__treesap@^0.0.12",
+        "npm:@jsr/treesap__treesap@^0.0.13",
         "npm:@radix-ui/react-collapsible@^1.1.1",
         "npm:@radix-ui/react-dialog@^1.1.2",
         "npm:@radix-ui/react-dropdown-menu@^2.1.2",
@@ -4289,9 +4305,11 @@
         "npm:class-variance-authority@^0.7.0",
         "npm:clsx@^2.1.1",
         "npm:lucide-react@^0.447.0",
+        "npm:next-themes@^0.3.0",
         "npm:react-beautiful-dnd@^13.1.1",
         "npm:react-dom@^18.3.1",
         "npm:react@^18.3.1",
+        "npm:sonner@^1.5.0",
         "npm:tailwind-merge@^2.5.2",
         "npm:tailwindcss-animate@^1.0.7",
         "npm:tailwindcss@^3.4.13",

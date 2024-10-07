@@ -27,16 +27,18 @@ export default function ItemsList({ collection, items }: Props) {
           <TableRow>
             <TableHead className="w-10">ID</TableHead>
             {fields.map((field) => (
-              <TableHead key={field.name}>{field.name}</TableHead>
+              <TableHead key={field.name}>{field.label}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item) => (
             <TableRow key={item.id}>
-              <a href={`/admin/collections/${collection.slug}/${item.id}`}>
-                <TableCell>{item.id}</TableCell>
-              </a>
+              <TableCell key={item.id}>
+                <a href={`/admin/collections/${collection.slug}/${item.id}`}>
+                  {item.id}
+                </a>
+              </TableCell>
               {fields.map((field) => (
                 <TableCell key={field.name}>{item[field.name]}</TableCell>
               ))}

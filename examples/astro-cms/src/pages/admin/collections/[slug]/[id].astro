@@ -14,8 +14,6 @@ const item = await treesap.findByID({
   collection: slug,
   id: id,
 });
-
-console.log(item.value);
 ---
 
 <CmsLayout title="Admin">
@@ -23,8 +21,6 @@ console.log(item.value);
     <Main
       client:only="react"
       title={collection.name}
-      buttonText="Add"
-      buttonHref={`/admin/collections/${slug}/create`}
     >
       <CmsForm client:only="react" collection={collection} item={item.value} />
     </Main>

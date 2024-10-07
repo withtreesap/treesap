@@ -1,5 +1,6 @@
 ---
 import "../styles/globals.css";
+import { Toaster } from "@/components/ui/sonner"
 
 import { ViewTransitions } from "astro:transitions";
 
@@ -42,5 +43,6 @@ const { title } = Astro.props;
 	</head>
 	<body class="">
 		<slot/>
+    <Toaster client:only="react" />
 	</body>
 </html>

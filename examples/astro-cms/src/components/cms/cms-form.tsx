@@ -83,11 +83,9 @@ export default function CmsForm({ global, collection, item }: CmsFormProps) {
       console.error('Failed to submit form:', res.statusText);
     } else {
       toast.success('Saved');
-      if (editing) {
-        window.location.reload();
-      } else {
-        window.location.href = `/admin/collections/${collection.slug}`;
-      }
+      // if (editing == false) {
+      //   window.location.href = `/admin/collections/${collection.slug}`;
+      // }
     }
   }
 

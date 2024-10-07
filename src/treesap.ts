@@ -200,8 +200,8 @@ export class Treesap {
   }: { collection: string, data: any }): Promise<any | undefined> {
     const id = ulid();
     const newData = {
-      ...data,
       id,
+      ...data,
     }
     const res = await this.db.atomic()
       .set([collection, id], newData)

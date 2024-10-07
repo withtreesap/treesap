@@ -220,11 +220,15 @@ export class Treesap {
     if (!existing) {
       return undefined;
     }
+    // cast the existing value to an object
+    const existingValue: any = existing.value;
+
     // merge the existing data with the new data
-    const updated = { ...existing, ...data };
+    const updated = { ...existingValue, ...data };
+
     // update the data in the kv database
-    await this.db.set([collection, id], updated);
-    return updated;
+    const res = await this.db.set([collection, id], updated);
+    return res.ok ? updated : undefined;
   }
 
   // a delete method that can be used to delete data directly from the kv database

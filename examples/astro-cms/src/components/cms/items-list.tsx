@@ -20,6 +20,15 @@ interface Item {
 export default function ItemsList({ collection, items }: Props) {
 
   const fields = collection.fields.slice(0, 3);
+  const maxLength = 70; 
+
+  const trimWord = (word: string) => {
+    if (word.length > maxLength) {
+      return word.substring(0, maxLength) + '...';
+    }
+    return word;
+  }
+
   return (
     <div className="container mx-auto">
       <Table className="table-auto">
@@ -27,7 +36,7 @@ export default function ItemsList({ collection, items }: Props) {
           <TableRow>
             <TableHead className="w-10">ID</TableHead>
             {fields.map((field) => (
-              <TableHead key={field.name}>{field.label}</TableHead>
+              <TableHead key={field.name}>{trimWord(field.label)}</TableHead>
             ))}
           </TableRow>
         </TableHeader>
@@ -35,12 +44,12 @@ export default function ItemsList({ collection, items }: Props) {
           {items.map((item) => (
             <TableRow key={item.id}>
               <TableCell key={item.id}>
-                <a href={`/admin/collections/${collection.slug}/${item.id}`}>
+                <a className="hover:underline" href={`/admin/collections/${collection.slug}/${item.id}`}>
                   {item.id}
                 </a>
               </TableCell>
               {fields.map((field) => (
-                <TableCell className="whitespace-nowrap" key={field.name}>{item[field.name]}</TableCell>
+                <TableCell className="whitespace-nowrap" key={field.name}>{trimWord(item[field.name])}</TableCell>
               ))}
             </TableRow>
           ))}

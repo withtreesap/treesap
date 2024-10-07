@@ -26,7 +26,7 @@ export default function Header({ navData }: HeaderProps) {
         </SheetTrigger>
         <SheetContent side="left" className="flex flex-col">
           <a href="/admin" className="px-4 flex items-center gap-2 font-semibold">
-            <Package2 className="h-6 w-6" />
+            <span className="text-xl">🌲</span>
             <span className="">Treesap CMS</span>
           </a>
           <SidebarContent navData={navData} />

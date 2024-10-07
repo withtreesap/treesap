@@ -1,9 +1,11 @@
 import { Collection, Global, TreesapOptions, CmsNavData } from './types/index.ts';
+import {ulid} from '@std/ulid';
 
 export class Treesap {
   db: Deno.Kv;
   collections: Collection[] | null = null;
   globals: Global[] | null = null;
+  
 
   constructor(
     options: TreesapOptions
@@ -196,8 +198,13 @@ export class Treesap {
     collection,
     data,
   }: { collection: string, data: any }): Promise<any | undefined> {
+    const id = ulid();
+    const newData = {
+      ...data,
+      id,
+    }
     const res = await this.db.atomic()
-      .set([collection, data.id], data)
+      .set([collection, id], newData)
       .commit();
 
     return res;

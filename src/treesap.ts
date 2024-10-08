@@ -22,10 +22,27 @@ export class Treesap {
   async initCollections() {
     // if collections are provided in the options, initialize them
     if (this.collections && this.collections.length > 0) {
-      // create all collections
+      // 1. Get existing collections from the database
+      const existingCollections = await this.getCollections();
+
+      // 2. Identify collections to delete
+      let collectionsToDelete: Collection[] = [];
+      for (const existing of existingCollections) {
+        if (!this.collections!.some(provided => provided.slug === existing.slug)) {
+          collectionsToDelete.push(existing);
+        }
+      }   
+
+      // 3. Delete removed collections
+      for (const collection of collectionsToDelete) {
+        await this.deleteCollection(collection.slug);
+      }
+
+      // 4. Create new collections (unchanged logic)
       for (const collection of this.collections) {
         await this.createCollection(collection);
       }
+
       this.collections = null; // Clear cache to force refresh
     }
   }
@@ -46,14 +63,19 @@ export class Treesap {
     const collections = this.collections || await this.getCollections();
     const globals = this.globals || await this.getGlobals();
     const nav: CmsNavData[] = [];
-    for (const collection of collections) {
+
+    // Sort collections and globals based on a criteria (e.g., creation date, name, etc.)
+    const sortedCollections = collections.sort((a, b) => a.name.localeCompare(b.name)); // Example: sorting by name
+    const sortedGlobals = globals.sort((a, b) => a.name.localeCompare(b.name));     // Example: sorting by name
+
+    for (const collection of sortedCollections) {
       nav.push({
         type: "collection",
         name: collection.name,
         slug: collection.slug,
       })
     }
-    for (const global of globals) {
+    for (const global of sortedGlobals) {
       nav.push({
         type: "global",
         name: global.name,
@@ -154,21 +176,10 @@ export class Treesap {
   }
 
   async deleteCollection(collection: string): Promise<any | undefined> {
-    // find the collection
-    const collectionItem = await this.getCollection(collection);
-    if (!collectionItem) {
-      return undefined;
-    }
-    // delete all the items in the collection
-    const items = await this.find({ collection: collectionItem.slug });
-    for (const item of items) {
-      await this.delete({ collection: collectionItem.slug, id: item.id });
-    }
     // delete the collection
-    await this.db.delete(["collections", collectionItem.slug]);
+    await this.db.delete(["collections", collection]);
     // clear the cached collections
     this.collections = null;
-
   }
 
   // a find method that can be used to find all items in a collection

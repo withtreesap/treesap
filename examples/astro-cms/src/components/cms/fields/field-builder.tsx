@@ -4,6 +4,9 @@ import TextField from './text-field';
 import TextareaField from './textarea-field';
 import SlugField from './slug-field';
 import MarkdownField from './markdown-field';
+import ImageField from './image-field';
+
+
 interface FieldBuilderProps {
   fields: Field[];
   formData: Record<string, string>;
@@ -45,6 +48,15 @@ const FieldBuilder: React.FC<FieldBuilderProps> = ({ fields, formData, onChange 
           case 'markdown':
             return (
               <MarkdownField
+                key={field.name}
+                model={field}
+                onChange={onChange}
+                value={formData[field.name] || ''}
+              />
+            );
+          case 'image':
+            return (
+              <ImageField
                 key={field.name}
                 model={field}
                 onChange={onChange}

@@ -24,5 +24,10 @@ export const projects: Collection = {
       label: "Chip Text",
       type: "text",
     },
+    {
+      name: "image",
+      label: "Image",
+      type: "image",
+    },
   ],
 };

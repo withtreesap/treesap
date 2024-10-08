@@ -5,19 +5,19 @@ export const socials: Global = {
   slug: "socials",
   fields: [
     {
-      name: "facebook",
-      label: "Facebook",
-      type: "string",
+      name: "youtube",
+      label: "Youtube",
+      type: "text",
     },
     {
-      name: "twitter",
-      label: "Twitter",
-      type: "string",
+      name: "x",
+      label: "X",
+      type: "text",
     },
     {
       name: "instagram",
       label: "Instagram",
-      type: "string",
+      type: "text",
     },
   ],
 };

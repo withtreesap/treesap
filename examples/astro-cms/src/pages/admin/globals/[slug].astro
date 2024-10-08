@@ -10,8 +10,6 @@ const navData = await treesap.getCmsNav();
 const { slug, id } = Astro.params;
 
 const global = await treesap.getGlobal(slug);
-
-console.log('global', global);
 ---
 
 <CmsLayout title="Admin">

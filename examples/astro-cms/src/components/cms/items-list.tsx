@@ -19,8 +19,14 @@ interface Item {
 
 export default function ItemsList({ collection, items }: Props) {
 
-  const fields = collection.fields.slice(0, 3);
-  const maxLength = 70; 
+  let fields;
+
+  fields = collection.fields.slice(0, 3);
+
+  // remove image field from fields
+  // fields = collection.fields.filter((field) => field.name !== 'image');
+
+  const maxLength = 70;
 
   const trimWord = (word: string) => {
     if (word.length > maxLength) {
@@ -49,7 +55,9 @@ export default function ItemsList({ collection, items }: Props) {
                 </a>
               </TableCell>
               {fields.map((field) => (
-                <TableCell className="whitespace-nowrap" key={field.name}>{trimWord(item[field.name])}</TableCell>
+                <TableCell className="whitespace-nowrap" key={field.name}>{
+                  field.type === 'image' ? <img src={item[field.name]} alt={field.label} /> :
+                    trimWord(item[field.name])}</TableCell>
               ))}
             </TableRow>
           ))}

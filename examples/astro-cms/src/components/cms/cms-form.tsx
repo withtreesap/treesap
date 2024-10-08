@@ -6,8 +6,6 @@ import FieldBuilder from './fields/field-builder'
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { toast } from "sonner"
-
-
 interface CmsFormProps {
   global?: Global;
   collection?: Collection;
@@ -26,6 +24,8 @@ export default function CmsForm({ global, collection, item }: CmsFormProps) {
     }
   }, [item, collection, global])
 
+  const fields = collection ? collection.fields : global.fields;
+
   const handleChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
@@ -43,7 +43,7 @@ export default function CmsForm({ global, collection, item }: CmsFormProps) {
     let url = '/api';
 
     if (global) {
-      url += `/globals/${global.slug}`;
+      url += `/globals/${global.slug}/item`;
     } else if (collection) {
       url += `/collections/${collection.slug}`;
     }
@@ -113,6 +113,7 @@ export default function CmsForm({ global, collection, item }: CmsFormProps) {
     }
   }
 
+  
 
   return (
     <div className="container mx-auto p-4">
@@ -127,7 +128,7 @@ export default function CmsForm({ global, collection, item }: CmsFormProps) {
         </div>
         <div className="flex flex-col gap-4">
           <FieldBuilder
-            fields={collection.fields}
+            fields={fields}
             formData={formData}
             onChange={handleChange}
           />

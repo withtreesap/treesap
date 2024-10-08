@@ -31,7 +31,7 @@ export class Treesap {
         if (!this.collections!.some(provided => provided.slug === existing.slug)) {
           collectionsToDelete.push(existing);
         }
-      }   
+      }
 
       // 3. Delete removed collections
       for (const collection of collectionsToDelete) {
@@ -51,9 +51,27 @@ export class Treesap {
     // if globals are provided in the options, initialize them
     if (this.globals && this.globals.length > 0) {
       // create all globals
+      // 1. Get existing globals from the database
+      const existingGlobals = await this.getGlobals();
+
+      // 2. Identify globals to delete
+      let globalsToDelete: Global[] = [];
+      for (const existing of existingGlobals) {
+        if (!this.globals!.some(provided => provided.slug === existing.slug)) {
+          globalsToDelete.push(existing);
+        }
+      }
+
+      // 3. Delete removed globals
+      for (const global of globalsToDelete) {
+        await this.deleteGlobal(global.slug);
+      }
+
+      // 4. Create new globals
       for (const global of this.globals) {
         await this.createGlobal(global);
       }
+      
       this.globals = null; // Clear cache to force refresh
     }
   }
@@ -113,6 +131,43 @@ export class Treesap {
 
   async deleteGlobal(slug: string): Promise<any | undefined> {
     await this.db.delete(["globals", slug]);
+  }
+
+  // Global Items
+
+  async getGlobalItems(slug: string): Promise<any | undefined> {
+    const result = await this.db.get(["global_items", slug]);
+    return result.value as any;
+  }
+
+  async createGlobalItem({
+    global,
+    data,
+  }: {
+    global: Global,
+    data: any,
+  }): Promise<any | undefined> {
+    const res = await this.db.atomic()
+      .set(["global_items", global.slug], data)
+      .commit();
+    return res;
+  }
+
+  async updateGlobalItem({
+    global,
+    data,
+  }: {
+    global: Global,
+    data: any,
+  }): Promise<any | undefined> {
+    const res = await this.db.atomic()
+      .set(["global_items", global.slug], data)
+      .commit();
+    return res;
+  }
+
+  async deleteGlobalItem(slug: string): Promise<any | undefined> {
+    await this.db.delete(["global_items", slug]);
   }
 
   // Collections
@@ -181,6 +236,8 @@ export class Treesap {
     // clear the cached collections
     this.collections = null;
   }
+
+  // Collection Items
 
   // a find method that can be used to find all items in a collection
   async find({

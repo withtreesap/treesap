@@ -71,7 +71,7 @@ export class Treesap {
       for (const global of this.globals) {
         await this.createGlobal(global);
       }
-      
+
       this.globals = null; // Clear cache to force refresh
     }
   }
@@ -135,7 +135,7 @@ export class Treesap {
 
   // Global Items
 
-  async getGlobalItems(slug: string): Promise<any | undefined> {
+  async getGlobalItem(slug: string): Promise<any | undefined> {
     const result = await this.db.get(["global_items", slug]);
     return result.value as any;
   }

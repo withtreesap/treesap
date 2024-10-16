@@ -36,17 +36,17 @@ export class FirestoreDbAdapter implements DbAdapter {
     return docSnap.data() as GlobalModel;
   }
 
-  async createGlobalModel(globalModel: GlobalModel) {
+  async createGlobalModel(globalModel: GlobalModel): Promise<void> {
     const docRef = doc(collection(this.db, this.globalModelsCollection), globalModel.slug);
     return setDoc(docRef, globalModel);
   }
 
-  async updateGlobalModel(globalModel: GlobalModel) {
+  async updateGlobalModel(globalModel: GlobalModel): Promise<void> {
     const docRef = doc(this.db, this.globalModelsCollection, globalModel.slug);
     return setDoc(docRef, globalModel);
   }
 
-  async deleteGlobalModel(globalSlug: string) {
+  async deleteGlobalModel(globalSlug: string): Promise<void> {
     const docRef = doc(this.db, this.globalModelsCollection, globalSlug);
     return deleteDoc(docRef);
   }
@@ -68,17 +68,17 @@ export class FirestoreDbAdapter implements DbAdapter {
     return docSnap.data() as GlobalItem;
   }
 
-  async createGlobalItem(globalSlug: string, globalItem: GlobalItem) {
+  async createGlobalItem(globalSlug: string, globalItem: GlobalItem): Promise<void> {
     const docRef = doc(this.db, this.globalItemsCollection, globalSlug);
     return setDoc(docRef, globalItem);
   }
 
-  async deleteGlobalItem(globalSlug: string) {
+  async deleteGlobalItem(globalSlug: string): Promise<void> {
     const docRef = doc(this.db, this.globalItemsCollection, globalSlug);
     return deleteDoc(docRef);
   }
 
-  async updateGlobalItem(globalSlug: string, globalItem: GlobalItem) {
+  async updateGlobalItem(globalSlug: string, globalItem: GlobalItem): Promise<void> {
     const docRef = doc(this.db, this.globalItemsCollection, globalSlug);
     return setDoc(docRef, globalItem);
   }
@@ -100,17 +100,17 @@ export class FirestoreDbAdapter implements DbAdapter {
     return docSnap.data() as CollectionModel;
   }
 
-  async createCollectionModel(collectionModel: CollectionModel) {
+  async createCollectionModel(collectionModel: CollectionModel): Promise<void> {
     const docRef = doc(collection(this.db, this.collectionModelsCollection), collectionModel.slug);
     return setDoc(docRef, collectionModel);
   }
 
-  async updateCollectionModel(collectionModel: CollectionModel) {
+  async updateCollectionModel(collectionModel: CollectionModel): Promise<void> {
     const docRef = doc(this.db, this.collectionModelsCollection, collectionModel.slug);
     return setDoc(docRef, collectionModel);
   }
 
-  async deleteCollectionModel(collectionName: string) {
+  async deleteCollectionModel(collectionName: string): Promise<void> {
     const docRef = doc(this.db, this.collectionModelsCollection, collectionName);
     return deleteDoc(docRef);
   }
@@ -127,13 +127,13 @@ export class FirestoreDbAdapter implements DbAdapter {
     return items;
   }
 
-  async getCollectionItemById<T>(collectionSlug: string, id: string) {
+  async getCollectionItemById<T>(collectionSlug: string, id: string): Promise<T | undefined> {
     const docRef = doc(this.db, collectionSlug, id);
     const docSnap = await getDoc(docRef);
     return docSnap.data() as T;
   }
 
-  async createCollectionItem<T>(collectionSlug: string, collectionItem: T) {
+  async createCollectionItem<T>(collectionSlug: string, collectionItem: T): Promise<void> {
     // create a new document in the collection
     const collectionRef = collection(this.db, collectionSlug);
     const docRef = doc(collectionRef);
@@ -148,19 +148,19 @@ export class FirestoreDbAdapter implements DbAdapter {
     return setDoc(docRef, newItem);
   }
 
-  async updateCollectionItem<T>(collectionSlug: string, id: string, collectionItem: T) {
+  async updateCollectionItem<T>(collectionSlug: string, id: string, collectionItem: T): Promise<void> {
     const docRef = doc(this.db, collectionSlug, id);
     return setDoc(docRef, collectionItem as any);
   }
 
-  async deleteCollectionItem(collectionSlug: string, id: string) {
+  async deleteCollectionItem(collectionSlug: string, id: string): Promise<void> {
     const docRef = doc(this.db, collectionSlug, id);
     return deleteDoc(docRef);
   }
 
   // USERS
 
-  async createNewUser(user: UserModel) {
+  async createNewUser(user: UserModel): Promise<void> {
     const docRef = doc(this.db, this.usersCollection, user.uid);
     return setDoc(docRef, user);
   }

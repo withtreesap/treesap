@@ -6,9 +6,12 @@
     "type": "git",
     "url": "https://github.com/withtreesap/treesap.git"
   },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "imports": {
     "@firebase/firestore": "npm:@firebase/firestore@^4.7.3",
-    "@treesap/treesap": "jsr:@treesap/treesap@^0.0.18"
+    "@treesap/treesap": "jsr:@treesap/treesap@^0.1.0"
   },
   "nodeModulesDir": "auto",
   "lock": false

@@ -1,0 +1,15 @@
+{
+  "name": "@treesap/db-firestore",
+  "license": "MIT",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/withtreesap/treesap.git"
+  },
+  "imports": {
+    "@firebase/firestore": "npm:@firebase/firestore@^4.7.3",
+    "@treesap/treesap": "jsr:@treesap/treesap@^0.0.18"
+  },
+  "nodeModulesDir": "auto",
+  "lock": false
+}

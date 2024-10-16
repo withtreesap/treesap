@@ -1,6 +1,6 @@
 {
-  "name": "@treesap/treesap",
-  "version": "0.0.18",
+  "name": "@treesap/db-firestore",
+  "version": "0.1.0",
   "license": "MIT",
   "exports": {
     ".": "./src/index.ts"
@@ -13,7 +13,6 @@
       "src/**/*.ts"
     ],
     "exclude": [
-      "examples/**",
       "src/**/*.test.ts",
       "src/**/*.test.tsx"
     ]

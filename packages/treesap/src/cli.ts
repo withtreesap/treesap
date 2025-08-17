@@ -51,9 +51,6 @@ async function startCommand(options: any) {
     if (options.devPort) config.devPort = parseInt(options.devPort);
     if (options.devCommand) config.devCommand = options.devCommand;
 
-    // Don't auto-start dev server for basic start command
-    config.autoStartDev = false;
-
     startServer(config);
 }
 
@@ -70,9 +67,6 @@ async function devCommand(options: any) {
     if (options.previewPort) config.previewPort = parseInt(options.previewPort);
     if (options.devPort) config.devPort = parseInt(options.devPort);
     if (options.devCommand) config.devCommand = options.devCommand;
-
-    // Always auto-start dev server for dev command
-    config.autoStartDev = true;
 
     startServer(config);
 }

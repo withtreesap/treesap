@@ -1,0 +1,63 @@
+{
+  "name": "treesap",
+  "version": "0.1.0",
+  "description": "AI Agent Framework",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "treesap": "dist/cli.js"
+  },
+  "scripts": {
+    "dev": "tsx --watch src/index.tsx",
+    "dev:css": "tailwindcss -i ./src/styles/input.css -o ./src/static/styles/main.css --watch",
+    "dev:example": "cd examples/basic-hono && npm run dev:src",
+    "dev:vite": "cd examples/basics-sapling && npm run dev:src",
+    "build": "npm run build:css && npm run build:ts && npm run copy:static",
+    "build:css": "tailwindcss -i ./src/styles/input.css -o ./src/static/styles/main.css",
+    "build:ts": "tsc",
+    "copy:static": "cp -r src/static dist/",
+    "start": "node dist/server.js",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "chat",
+    "realtime",
+    "islands",
+    "ssr",
+    "hono",
+    "sapling",
+    "cli"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@hono/node-server": "^1.13.1",
+    "@sapling/sapling": "npm:@jsr/sapling__sapling@^0.8.0-beta.2",
+    "@tailwindcss/typography": "^0.5.16",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.7",
+    "hono": "^4.9.1",
+    "node-pty": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.15",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "workspaces": [
+    "examples/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/withtreesap/treesap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/withtreesap/treesap/issues"
+  },
+  "homepage": "https://github.com/withtreesap/treesap#readme"
+}

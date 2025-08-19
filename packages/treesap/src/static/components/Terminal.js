@@ -1,41 +1,44 @@
 // Terminal component JavaScript using Xterm.js
 import { Terminal } from 'https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/+esm';
+import { terminalStore } from '/signals/TerminalSignal.js';
 class TerminalManager {
-  constructor(id = 'terminal') {
-    this.id = id;
-    this.container = document.getElementById(id);
-    this.xtermContainer = document.getElementById(`${id}-xterm`);
-    this.resetBtn = document.getElementById(`${id}-reset-btn`);
-    this.status = document.getElementById(`${id}-status`);
+  constructor(terminalId) {
+    this.terminalId = terminalId;
+    this.container = document.getElementById(terminalId);
+    this.xtermContainer = document.getElementById(`${terminalId}-xterm`);
+    this.resetBtn = document.getElementById(`${terminalId}-reset-btn`);
+    this.status = document.getElementById(`${terminalId}-status`);
     
-    // Check for passed sessionId, otherwise generate one
-    const passedSessionId = window[`terminalSessionId_${id.replace(/-/g, '_')}`];
-    this.sessionId = passedSessionId || this.generateSessionId();
-    console.log(`Terminal ${id} using sessionId:`, this.sessionId);
+    // Get terminal data from window
+    const terminalData = window[`terminalData_${terminalId.replace(/-/g, '_')}`];
+    if (!terminalData) {
+      console.error(`No terminal data found for ${terminalId}`);
+      return;
+    }
+    
+    this.sessionId = terminalData.sessionId;
+    this.index = terminalData.index;
+    
+    console.log(`Terminal ${terminalId} initialized with:`, terminalData);
+    
+    // Register terminal in store
+    terminalStore.addTerminal(this.index);
+    terminalStore.updateTerminalStatus(terminalId, 'connecting');
     
     this.eventSource = null;
     this.terminal = null;
     
-    // Share session ID globally for Claude Controller
-    if (typeof window !== 'undefined') {
-      window.sharedTerminalSessionId = this.sessionId;
-      console.log('Terminal session ID shared:', this.sessionId);
-    }
-    
     this.init();
   }
 
-  generateSessionId() {
-    return 'terminal_' + Math.random().toString(36).substr(2, 9);
-  }
-
   init() {
-    console.log('Terminal init called with ID:', this.id);
+    console.log('Terminal init called with ID:', this.terminalId);
     console.log('Container found:', !!this.container);
     console.log('Xterm container found:', !!this.xtermContainer);
     
     if (!this.container || !this.xtermContainer) {
-      console.error('Terminal containers not found! Looking for ID:', this.id);
+      console.error('Terminal containers not found! Looking for ID:', this.terminalId);
+      terminalStore.updateTerminalStatus(this.terminalId, 'error');
       return;
     }
 
@@ -106,10 +109,20 @@ class TerminalManager {
 
   fitTerminal() {
     if (this.terminal && this.xtermContainer) {
-      const containerRect = this.xtermContainer.getBoundingClientRect();
-      const cols = Math.floor(containerRect.width / 7.2); // Approximate character width for 12px font
-      const rows = Math.floor(containerRect.height / 14.4); // Approximate line height for 12px font
-      this.terminal.resize(cols, rows);
+      // Wait a moment to ensure container is properly sized
+      setTimeout(() => {
+        const containerRect = this.xtermContainer.getBoundingClientRect();
+        if (containerRect.width > 0 && containerRect.height > 0) {
+          const cols = Math.floor(containerRect.width / 7.2); // Approximate character width for 12px font
+          const rows = Math.floor(containerRect.height / 14.4); // Approximate line height for 12px font
+          console.log(`Fitting terminal ${this.terminalId}: ${cols}x${rows} (container: ${containerRect.width}x${containerRect.height})`);
+          this.terminal.resize(cols, rows);
+        } else {
+          console.warn(`Terminal ${this.terminalId} container has zero dimensions, retrying...`);
+          // Retry after a short delay
+          setTimeout(() => this.fitTerminal(), 100);
+        }
+      }, 10);
     }
   }
 
@@ -147,6 +160,7 @@ class TerminalManager {
     
     this.eventSource.onopen = () => {
       this.updateStatus('Ready');
+      terminalStore.updateTerminalStatus(this.terminalId, 'connected');
     };
     
     this.eventSource.onmessage = (event) => {
@@ -172,10 +186,12 @@ class TerminalManager {
     this.eventSource.onerror = (error) => {
       console.error('Terminal stream error:', error);
       this.updateStatus('Disconnected');
+      terminalStore.updateTerminalStatus(this.terminalId, 'disconnected');
       
       // Attempt to reconnect after a delay
       setTimeout(() => {
         if (this.eventSource.readyState === EventSource.CLOSED) {
+          terminalStore.updateTerminalStatus(this.terminalId, 'connecting');
           this.connectToTerminal();
         }
       }, 3000);
@@ -203,42 +219,52 @@ class TerminalManager {
     if (this.terminal) {
       this.terminal.dispose();
     }
+    // Remove from store
+    terminalStore.removeTerminal(this.terminalId);
   }
 }
 
 // Auto-initialize when script loads
-console.log('Terminal.js loaded, looking for terminal container...');
-let terminalManager;
+console.log('Terminal.js loaded, looking for terminal containers...');
+let terminalManagers = new Map();
 
-function initializeTerminal() {
-  // Look for all sapling-islands and find the one with terminal content
+function initializeTerminals() {
+  // Look for all sapling-islands and find the ones with terminal content
   const saplingIslands = document.querySelectorAll('sapling-island');
-  let terminalId = 'terminal'; // default
   
   for (const island of saplingIslands) {
     // Look for a div with bg-gray-900 class (terminal styling)
     const terminalDiv = island.querySelector('div.bg-gray-900[id]');
-    if (terminalDiv && terminalDiv.id) {
-      terminalId = terminalDiv.id;
+    if (terminalDiv && terminalDiv.id && terminalDiv.id.startsWith('terminal-')) {
+      const terminalId = terminalDiv.id;
       console.log('Found terminal component with ID:', terminalId);
-      break;
+      
+      // Check if we already have a manager for this terminal
+      if (!terminalManagers.has(terminalId)) {
+        const manager = new TerminalManager(terminalId);
+        terminalManagers.set(terminalId, manager);
+      }
     }
   }
   
-  console.log('Using terminal ID:', terminalId);
-  terminalManager = new TerminalManager(terminalId);
+  console.log(`Initialized ${terminalManagers.size} terminal(s)`);
 }
 
 // Try immediate initialization
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeTerminal);
+  document.addEventListener('DOMContentLoaded', initializeTerminals);
 } else {
-  initializeTerminal();
+  initializeTerminals();
 }
+
+// Make available globally
+window.terminalManagers = terminalManagers;
+window.TerminalManager = TerminalManager;
+window.initializeTerminals = initializeTerminals;
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
-  if (terminalManager) {
-    terminalManager.destroy();
+  for (const manager of terminalManagers.values()) {
+    manager.destroy();
   }
 });

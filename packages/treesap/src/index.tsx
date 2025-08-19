@@ -6,6 +6,7 @@ export { startServer, type TreesapConfig };
 // Export components and layouts for library usage
 export { default as Layout } from './layouts/Layout.js';
 export { default as NotFoundLayout } from './layouts/NotFoundLayout.js';
-export { Home } from './pages/Home.js';
+export { Welcome } from './pages/Welcome.js';
+export { Code } from './pages/Code.js';
 
 export { DevServerManager } from './services/dev-server.js';

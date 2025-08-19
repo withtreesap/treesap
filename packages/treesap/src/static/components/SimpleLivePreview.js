@@ -129,7 +129,7 @@ class SimpleLivePreviewManager {
   toggleClaudeVisibility() {
     this.isClaudeHidden = !this.isClaudeHidden;
     
-    const terminalPane = document.getElementById('terminal-pane');
+    const terminalPane = document.getElementById('sidebar-pane');
     const previewPane = document.getElementById(this.id);
     
     if (terminalPane && previewPane) {

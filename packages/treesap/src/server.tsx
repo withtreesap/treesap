@@ -2,7 +2,8 @@
 import { Hono, type Context } from "hono";
 import { serveStatic } from "@hono/node-server/serve-static";
 import NotFoundLayout from "./layouts/NotFoundLayout.js";
-import { Home } from "./pages/Home.js";
+import { Welcome } from "./pages/Welcome.js";
+import { Code } from "./pages/Code.js";
 import { DevServerManager } from "./services/dev-server.js";
 import { TerminalService } from "./services/terminal.js";
 import * as path from 'node:path';
@@ -50,13 +51,22 @@ export async function startServer(config: TreesapConfig & { autoStartDev?: boole
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
   const moduleStaticRoot = path.join(moduleDir, 'static');
 
-  // Home page
+  // Welcome page (default)
   app.get("/", (c: Context) => {
     // Additional cache prevention headers
     c.header('Cache-Control', 'no-cache, no-store, must-revalidate, private');
     c.header('Pragma', 'no-cache');
     c.header('Expires', '0');
-    return c.html(<Home previewPort={previewPort} />);
+    return c.html(<Welcome />);
+  });
+
+  // Code page
+  app.get("/code", (c: Context) => {
+    // Additional cache prevention headers
+    c.header('Cache-Control', 'no-cache, no-store, must-revalidate, private');
+    c.header('Pragma', 'no-cache');
+    c.header('Expires', '0');
+    return c.html(<Code previewPort={previewPort} />);
   });
 
   // Claude page
@@ -65,7 +75,7 @@ export async function startServer(config: TreesapConfig & { autoStartDev?: boole
     c.header('Cache-Control', 'no-cache, no-store, must-revalidate, private');
     c.header('Pragma', 'no-cache');
     c.header('Expires', '0');
-    return c.html(<Home previewPort={previewPort} workingDirectory={projectRoot} />);
+    return c.html(<Code previewPort={previewPort} workingDirectory={projectRoot} />);
   });
 
   

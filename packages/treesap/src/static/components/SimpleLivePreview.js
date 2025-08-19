@@ -5,8 +5,10 @@ class SimpleLivePreviewManager {
     
     // DOM elements
     this.container = document.getElementById(id);
-    this.hideClaudeBtn = document.getElementById(`${id}-hide-claude-btn`);
-    this.hideClaudeIcon = document.getElementById(`${id}-hide-claude-icon`);
+    this.hideSidebarBtn = document.getElementById(`${id}-hide-sidebar-btn`);
+    this.hideSidebarIcon = document.getElementById(`${id}-hide-sidebar-icon`);
+    this.floatingHideSidebarBtn = document.getElementById(`${id}-floating-hide-sidebar-btn`);
+    this.floatingHideSidebarIcon = document.getElementById(`${id}-floating-hide-sidebar-icon`);
     this.refreshBtn = document.getElementById(`${id}-refresh-btn`);
     this.urlInput = document.getElementById(`${id}-url-input`);
     this.loadBtn = document.getElementById(`${id}-load-btn`);
@@ -16,7 +18,7 @@ class SimpleLivePreviewManager {
     this.previewPort = this.iframe?.getAttribute('data-preview-port') || 5173;
     
     // State
-    this.isClaudeHidden = false;
+    this.isSidebarHidden = false;
     
     this.init();
   }
@@ -35,8 +37,9 @@ class SimpleLivePreviewManager {
   }
 
   setupEventListeners() {
-    // Hide Claude toggle
-    this.hideClaudeBtn?.addEventListener('click', () => this.toggleClaudeVisibility());
+    // Hide sidebar toggle (both sidebar and floating button)
+    this.hideSidebarBtn?.addEventListener('click', () => this.toggleSidebarVisibility());
+    this.floatingHideSidebarBtn?.addEventListener('click', () => this.toggleSidebarVisibility());
 
     // Refresh button
     this.refreshBtn?.addEventListener('click', () => this.refreshIframe());
@@ -66,10 +69,10 @@ class SimpleLivePreviewManager {
         e.preventDefault();
         this.refreshIframe();
       }
-      // Cmd/Ctrl + B to toggle Claude panel
+      // Cmd/Ctrl + B to toggle sidebar panel
       if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
         e.preventDefault();
-        this.toggleClaudeVisibility();
+        this.toggleSidebarVisibility();
       }
     });
 
@@ -126,38 +129,50 @@ class SimpleLivePreviewManager {
     }
   }
 
-  toggleClaudeVisibility() {
-    this.isClaudeHidden = !this.isClaudeHidden;
+  toggleSidebarVisibility() {
+    this.isSidebarHidden = !this.isSidebarHidden;
     
-    const terminalPane = document.getElementById('sidebar-pane');
+    const sidebarPane = document.getElementById('sidebar-pane');
     const previewPane = document.getElementById(this.id);
     
-    if (terminalPane && previewPane) {
-      if (this.isClaudeHidden) {
-        // Hide terminal pane and make preview full width
-        terminalPane.style.display = 'none';
+    if (sidebarPane && previewPane) {
+      if (this.isSidebarHidden) {
+        // Hide sidebar pane and make preview full width
+        sidebarPane.style.display = 'none';
         previewPane.classList.remove('flex-1');
         previewPane.classList.add('w-full');
         
-        // Update button icon and title
-        if (this.hideClaudeIcon) {
-          this.hideClaudeIcon.setAttribute('icon', 'ph:sidebar-simple-fill');
+        // Update button icons and titles
+        if (this.hideSidebarIcon) {
+          this.hideSidebarIcon.setAttribute('icon', 'ph:sidebar-simple-fill');
         }
-        if (this.hideClaudeBtn) {
-          this.hideClaudeBtn.setAttribute('title', 'Show Terminal');
+        if (this.floatingHideSidebarIcon) {
+          this.floatingHideSidebarIcon.setAttribute('icon', 'ph:sidebar-simple-fill');
+        }
+        if (this.hideSidebarBtn) {
+          this.hideSidebarBtn.setAttribute('title', 'Show Sidebar');
+        }
+        if (this.floatingHideSidebarBtn) {
+          this.floatingHideSidebarBtn.setAttribute('title', 'Show Sidebar');
         }
       } else {
-        // Show terminal pane and restore original widths
-        terminalPane.style.display = '';
+        // Show sidebar pane and restore original widths
+        sidebarPane.style.display = '';
         previewPane.classList.remove('w-full');
         previewPane.classList.add('flex-1');
         
-        // Update button icon and title
-        if (this.hideClaudeIcon) {
-          this.hideClaudeIcon.setAttribute('icon', 'ph:sidebar-simple');
+        // Update button icons and titles
+        if (this.hideSidebarIcon) {
+          this.hideSidebarIcon.setAttribute('icon', 'ph:sidebar-simple');
         }
-        if (this.hideClaudeBtn) {
-          this.hideClaudeBtn.setAttribute('title', 'Hide Terminal');
+        if (this.floatingHideSidebarIcon) {
+          this.floatingHideSidebarIcon.setAttribute('icon', 'ph:sidebar-simple');
+        }
+        if (this.hideSidebarBtn) {
+          this.hideSidebarBtn.setAttribute('title', 'Hide Sidebar');
+        }
+        if (this.floatingHideSidebarBtn) {
+          this.floatingHideSidebarBtn.setAttribute('title', 'Hide Sidebar');
         }
       }
     }

@@ -22,11 +22,11 @@ export function Code({ previewPort = 1234, workingDirectory }: TerminalProps) {
           <div class="p-3 border-b border-[#3c3c3c] bg-[#2d2d30]">
             <div class="flex items-center gap-2">
               <button
-                id="live-preview-hide-claude-btn"
+                id="live-preview-hide-sidebar-btn"
                 class="p-2 hover:bg-[#3c3c3c] rounded-md transition-colors flex items-center text-[#cccccc] hover:text-white"
                 title="Hide Sidebar"
               >
-                <iconify-icon id="live-preview-hide-claude-icon" icon="ph:sidebar-simple" width="16" height="16"></iconify-icon>
+                <iconify-icon id="live-preview-hide-sidebar-icon" icon="ph:sidebar-simple" width="16" height="16"></iconify-icon>
               </button>
               <button
                 type="button"

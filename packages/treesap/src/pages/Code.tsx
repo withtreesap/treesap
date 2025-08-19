@@ -12,7 +12,7 @@ export function Code({ previewPort = 1234, workingDirectory }: TerminalProps) {
     <Layout title="Code Editor">
       <div id="code-container" class="h-screen flex bg-[#1e1e1e]">
         {/* Left Pane - Tabbed Sidebar */}
-        <div id="sidebar-pane" class="w-2/5 border-r border-[#3c3c3c] transition-all duration-300 flex flex-col bg-[#252526]">
+        <div id="sidebar-pane" class="w-2/5-plus border-r border-[#3c3c3c] transition-all duration-300 flex flex-col bg-[#252526]">
           {/* Back to Home */}
           <div class="p-3 border-b border-[#3c3c3c]">
             <a href="/" class="text-[#cccccc] hover:text-white text-sm">← Back to Home</a>

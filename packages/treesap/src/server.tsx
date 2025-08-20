@@ -235,6 +235,8 @@ export async function startServer(config: TreesapConfig & { autoStartDev?: boole
             controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
           } catch (error) {
             console.error('Error sending terminal output:', error);
+            // Remove listener on error to prevent memory leaks
+            session!.eventEmitter.removeListener('output', handleOutput);
           }
         };
 
@@ -242,7 +244,11 @@ export async function startServer(config: TreesapConfig & { autoStartDev?: boole
 
         // Handle client disconnect
         const handleDisconnect = () => {
-          session!.eventEmitter.removeListener('output', handleOutput);
+          try {
+            session!.eventEmitter.removeListener('output', handleOutput);
+          } catch (error) {
+            console.error('Error removing output listener:', error);
+          }
         };
 
         // Clean up on stream close
@@ -260,6 +266,25 @@ export async function startServer(config: TreesapConfig & { autoStartDev?: boole
         'Access-Control-Allow-Origin': '*'
       }
     });
+  });
+
+  // Delete terminal session
+  app.delete("/terminal/session/:sessionId", async (c: Context) => {
+    const sessionId = c.req.param('sessionId');
+    
+    if (!sessionId) {
+      return c.json({ error: "Session ID is required" }, 400);
+    }
+
+    const success = TerminalService.destroySession(sessionId);
+    
+    if (success) {
+      
+      return c.json({ message: `Terminal session ${sessionId} destroyed successfully` });
+    } else {
+      console.log(`Terminal session not found: ${sessionId}`);
+      return c.json({ error: `Terminal session ${sessionId} not found` }, 404);
+    }
   });
 
   // Claude Code subprocess management

@@ -19,6 +19,8 @@ export class TerminalService {
     this.destroySession(sessionId);
 
     const eventEmitter = new EventEmitter();
+    // Increase max listeners to handle multiple terminal tabs and connections
+    eventEmitter.setMaxListeners(20);
     
     // Create a PTY process for proper terminal behavior
     const ptyProcess = pty.spawn(process.platform === 'win32' ? 'cmd.exe' : process.env.SHELL || '/bin/bash', [], {

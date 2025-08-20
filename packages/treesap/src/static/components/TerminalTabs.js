@@ -42,9 +42,9 @@ class TerminalTabManager {
       // Close button handlers
       const closeBtns = document.querySelectorAll(`[data-terminal-index="${i}"].terminal-close-btn`);
       closeBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
           e.stopPropagation();
-          this.closeTerminal(i);
+          await this.closeTerminal(i);
         });
       });
     }
@@ -220,7 +220,7 @@ class TerminalTabManager {
     console.log('Maximum number of terminals reached');
   }
   
-  closeTerminal(index) {
+  async closeTerminal(index) {
     if (index === 1) {
       console.log('Cannot close terminal 1');
       return; // Can't close the first terminal
@@ -232,6 +232,36 @@ class TerminalTabManager {
     const container = document.getElementById(`terminal-container-${index}`);
     
     if (tab && container) {
+      // Destroy server-side terminal session
+      const terminal = terminalStore.getTerminalByIndex(index);
+      if (terminal && terminal.sessionId) {
+        try {
+          const response = await fetch(`/terminal/session/${terminal.sessionId}`, {
+            method: 'DELETE'
+          });
+          
+          if (response.ok) {
+            console.log(`Terminal session ${terminal.sessionId} destroyed on server`);
+          } else {
+            console.warn(`Failed to destroy terminal session ${terminal.sessionId} on server:`, await response.text());
+          }
+        } catch (error) {
+          console.error(`Error destroying terminal session ${terminal.sessionId}:`, error);
+        }
+      } else {
+        console.warn(`No terminal found with index ${index} to destroy session`);
+      }
+      
+      // Destroy the terminal manager instance
+      if (window.terminalManagers) {
+        const manager = window.terminalManagers.get(`terminal-${index}`);
+        if (manager) {
+          await manager.destroy();
+          window.terminalManagers.delete(`terminal-${index}`);
+          console.log(`Terminal manager for terminal-${index} destroyed`);
+        }
+      }
+      
       // Hide the tab and container
       tab.style.display = 'none';
       container.style.display = 'none';

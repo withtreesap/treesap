@@ -212,13 +212,34 @@ class TerminalManager {
     }
   }
 
-  destroy() {
+  async destroy() {
     if (this.eventSource) {
       this.eventSource.close();
     }
     if (this.terminal) {
       this.terminal.dispose();
     }
+    
+    // Destroy server-side terminal session
+    const sessionId = terminalStore.getSessionId(this.terminalId);
+    if (sessionId) {
+      try {
+        const response = await fetch(`/terminal/session/${sessionId}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          console.log(`Terminal session ${sessionId} destroyed on server`);
+        } else {
+          console.warn(`Failed to destroy terminal session ${sessionId} on server:`, await response.text());
+        }
+      } catch (error) {
+        console.error(`Error destroying terminal session ${sessionId}:`, error);
+      }
+    } else {
+      console.warn(`No sessionId found for terminal ${this.terminalId}`);
+    }
+    
     // Remove from store
     terminalStore.removeTerminal(this.terminalId);
   }

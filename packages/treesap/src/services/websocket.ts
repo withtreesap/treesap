@@ -104,8 +104,6 @@ export class WebSocketTerminalService {
         return;
       }
 
-      console.log(`Received message from ${clientId}:`, message.type, message.sessionId);
-
       switch (message.type) {
         case 'join':
           this.handleJoin(clientId, message);
@@ -186,9 +184,7 @@ export class WebSocketTerminalService {
 
   private static handleInput(clientId: string, message: WebSocketMessage) {
     const client = this.clients.get(clientId);
-    if (!client || !message.sessionId || message.data === undefined) return;
-
-    console.log(`Input from client ${clientId} to session ${message.sessionId}`);
+    if (!client || !message.sessionId || message.data === undefined) return;;
 
     // Get the terminal session
     const session = TerminalService.getSession(message.sessionId);

@@ -1,4 +1,5 @@
 import { Terminal as TerminalComponent } from "./Terminal.js";
+import { ChatInput } from "./ChatInput.js";
 
 interface SidebarProps {
   id?: string;
@@ -81,9 +82,15 @@ export function Sidebar({ id = "sidebar", previewPort = 1234, workingDirectory }
         </div>
         
         {/* Terminal Content */}
-        <div class="flex-1 overflow-hidden bg-[#1e1e1e]">
-          <div class="h-full">
+        <div class="flex-1 overflow-hidden bg-[#1e1e1e] flex flex-col">
+          {/* Terminal Display */}
+          <div class="flex-1 overflow-hidden">
             <TerminalComponent index={1} />
+          </div>
+          
+          {/* Chat Input */}
+          <div class="flex-shrink-0">
+            <ChatInput id="chat-input" terminalId="terminal-1" />
           </div>
         </div>
       </div>

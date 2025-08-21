@@ -99,6 +99,8 @@ class TerminalManager {
 
     // Handle terminal input - pass through to shell
     this.terminal.onData((data) => {
+      // Log the input data for debugging
+      console.log('Terminal input (manual typing):', JSON.stringify(data), 'char codes:', data.split('').map(c => c.charCodeAt(0)));
       // Send all input directly to the shell session
       this.sendInput(data);
     });

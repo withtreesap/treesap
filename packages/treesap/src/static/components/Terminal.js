@@ -1,6 +1,7 @@
-// Terminal component JavaScript using Xterm.js
+// Terminal component JavaScript using Xterm.js with WebSocket
 import { Terminal } from 'https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/+esm';
 import { terminalStore } from '/signals/TerminalSignal.js';
+
 class TerminalManager {
   constructor(terminalId) {
     this.terminalId = terminalId;
@@ -25,8 +26,12 @@ class TerminalManager {
     terminalStore.addTerminal(this.index);
     terminalStore.updateTerminalStatus(terminalId, 'connecting');
     
-    this.eventSource = null;
+    // WebSocket connection
+    this.websocket = null;
     this.terminal = null;
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 5;
+    this.reconnectDelay = 1000; // Start with 1 second
     
     this.init();
   }
@@ -48,7 +53,7 @@ class TerminalManager {
     // Set up event listeners
     this.setupEventListeners();
     
-    // Connect to terminal stream
+    // Connect to terminal via WebSocket
     this.connectToTerminal();
   }
 
@@ -136,65 +141,147 @@ class TerminalManager {
   }
 
   sendInput(data) {
-    // Send input directly to shell stdin
-    fetch(`/terminal/input/${this.sessionId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ input: data })
-    })
-    .catch(error => {
-      console.error('Error sending input:', error);
-    });
+    // Send input via WebSocket
+    if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+      const message = {
+        type: 'input',
+        sessionId: this.sessionId,
+        terminalId: this.terminalId,
+        data: data
+      };
+      this.websocket.send(JSON.stringify(message));
+    } else {
+      console.error('WebSocket not connected, cannot send input');
+      this.updateStatus('Disconnected');
+      terminalStore.updateTerminalStatus(this.terminalId, 'disconnected');
+    }
   }
 
   connectToTerminal() {
-    if (this.eventSource) {
-      this.eventSource.close();
+    if (this.websocket) {
+      this.websocket.close();
     }
 
     this.updateStatus('Connecting...');
     
-    this.eventSource = new EventSource(`/terminal/stream/${this.sessionId}`);
+    // Create WebSocket connection
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/terminal/ws`;
     
-    this.eventSource.onopen = () => {
-      this.updateStatus('Ready');
-      terminalStore.updateTerminalStatus(this.terminalId, 'connected');
+    console.log(`Connecting to WebSocket: ${wsUrl}`);
+    this.websocket = new WebSocket(wsUrl);
+    
+    this.websocket.onopen = () => {
+      console.log('WebSocket connected, joining terminal session');
+      this.reconnectAttempts = 0;
+      this.reconnectDelay = 1000;
+      
+      // Join the terminal session
+      const joinMessage = {
+        type: 'join',
+        sessionId: this.sessionId,
+        terminalId: this.terminalId
+      };
+      this.websocket.send(JSON.stringify(joinMessage));
     };
     
-    this.eventSource.onmessage = (event) => {
+    this.websocket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log('Received WebSocket message:', data.type);
         
-        if (data.type === 'output') {
-          this.terminal.write(data.content);
-        } else if (data.type === 'error') {
-          this.terminal.write(`\x1b[31m${data.content}\x1b[0m`);
-        } else if (data.type === 'exit') {
-          this.terminal.writeln(`\x1b[90mProcess exited with code ${data.code}\x1b[0m`);
-          this.terminal.write('\x1b[32m$ \x1b[0m');
-        } else if (data.type === 'connected') {
-          // Terminal connected - shell will show its own prompt
-          console.log('Terminal connected');
+        switch (data.type) {
+          case 'connected':
+            this.updateStatus('Ready');
+            terminalStore.updateTerminalStatus(this.terminalId, 'connected');
+            console.log('Terminal session joined successfully');
+            // Dispatch global status for cross-tab sync
+            document.dispatchEvent(new CustomEvent('terminal:global_status', {
+              detail: { status: 'connected' }
+            }));
+            break;
+            
+          case 'output':
+            if (data.content) {
+              this.terminal.write(data.content);
+            }
+            break;
+            
+          case 'error':
+            if (data.content) {
+              this.terminal.write(`\x1b[31m${data.content}\x1b[0m`);
+            } else if (data.data) {
+              this.terminal.write(`\x1b[31m${data.data}\x1b[0m`);
+            }
+            break;
+            
+          case 'exit':
+            this.terminal.writeln(`\x1b[90mProcess exited with code ${data.code || 0}\x1b[0m`);
+            this.terminal.write('\x1b[32m$ \x1b[0m');
+            break;
+            
+          case 'clients_count':
+            console.log(`${data.count} clients connected to this session`);
+            // Dispatch event for TerminalSignal to handle cross-tab sync
+            document.dispatchEvent(new CustomEvent('terminal:clients_count', {
+              detail: { 
+                sessionId: this.sessionId, 
+                count: data.count 
+              }
+            }));
+            break;
+            
+          case 'session_closed':
+            console.log('Terminal session was closed');
+            this.updateStatus('Session Closed');
+            terminalStore.updateTerminalStatus(this.terminalId, 'closed');
+            // Dispatch event for TerminalSignal to handle cross-tab sync
+            document.dispatchEvent(new CustomEvent('terminal:session_closed', {
+              detail: { 
+                sessionId: this.sessionId 
+              }
+            }));
+            break;
+            
+          case 'pong':
+            // Connection health check response
+            break;
+            
+          default:
+            console.log('Unknown message type:', data.type, data);
         }
       } catch (error) {
-        console.error('Error parsing terminal data:', error);
+        console.error('Error parsing WebSocket message:', error);
       }
     };
     
-    this.eventSource.onerror = (error) => {
-      console.error('Terminal stream error:', error);
+    this.websocket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      this.updateStatus('Connection Error');
+      terminalStore.updateTerminalStatus(this.terminalId, 'error');
+    };
+    
+    this.websocket.onclose = (event) => {
+      console.log('WebSocket closed:', event.code, event.reason);
       this.updateStatus('Disconnected');
       terminalStore.updateTerminalStatus(this.terminalId, 'disconnected');
       
-      // Attempt to reconnect after a delay
-      setTimeout(() => {
-        if (this.eventSource.readyState === EventSource.CLOSED) {
-          terminalStore.updateTerminalStatus(this.terminalId, 'connecting');
+      // Attempt to reconnect with exponential backoff
+      if (this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.reconnectAttempts++;
+        console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${this.reconnectDelay}ms`);
+        
+        setTimeout(() => {
           this.connectToTerminal();
-        }
-      }, 3000);
+        }, this.reconnectDelay);
+        
+        // Exponential backoff: double the delay each time, max 10 seconds
+        this.reconnectDelay = Math.min(this.reconnectDelay * 2, 10000);
+      } else {
+        console.error('Max reconnection attempts reached');
+        this.updateStatus('Connection Failed');
+        terminalStore.updateTerminalStatus(this.terminalId, 'failed');
+      }
     };
   }
 
@@ -213,32 +300,25 @@ class TerminalManager {
   }
 
   async destroy() {
-    if (this.eventSource) {
-      this.eventSource.close();
+    // Send leave message to WebSocket before closing
+    if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+      const leaveMessage = {
+        type: 'leave',
+        sessionId: this.sessionId,
+        terminalId: this.terminalId
+      };
+      this.websocket.send(JSON.stringify(leaveMessage));
+    }
+    
+    if (this.websocket) {
+      this.websocket.close();
     }
     if (this.terminal) {
       this.terminal.dispose();
     }
     
-    // Destroy server-side terminal session
-    const sessionId = terminalStore.getSessionId(this.terminalId);
-    if (sessionId) {
-      try {
-        const response = await fetch(`/terminal/session/${sessionId}`, {
-          method: 'DELETE'
-        });
-        
-        if (response.ok) {
-          console.log(`Terminal session ${sessionId} destroyed on server`);
-        } else {
-          console.warn(`Failed to destroy terminal session ${sessionId} on server:`, await response.text());
-        }
-      } catch (error) {
-        console.error(`Error destroying terminal session ${sessionId}:`, error);
-      }
-    } else {
-      console.warn(`No sessionId found for terminal ${this.terminalId}`);
-    }
+    // Note: We don't destroy the server-side session anymore since other tabs might be using it
+    // The WebSocket service will manage session cleanup when all clients disconnect
     
     // Remove from store
     terminalStore.removeTerminal(this.terminalId);

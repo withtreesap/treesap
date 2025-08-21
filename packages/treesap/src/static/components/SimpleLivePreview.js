@@ -1,4 +1,6 @@
 // SimpleLivePreview component JavaScript
+import { sidebarStore } from '/signals/SidebarSignal.js';
+
 class SimpleLivePreviewManager {
   constructor(id = 'simple-preview') {
     this.id = id;
@@ -17,8 +19,8 @@ class SimpleLivePreviewManager {
     // Get preview port from iframe data attribute
     this.previewPort = this.iframe?.getAttribute('data-preview-port') || 5173;
     
-    // State
-    this.isSidebarHidden = false;
+    // Reference to the sidebar store
+    this.store = sidebarStore;
     
     this.init();
   }
@@ -34,12 +36,15 @@ class SimpleLivePreviewManager {
     
     // Set up event listeners
     this.setupEventListeners();
+    
+    // Subscribe to sidebar store changes
+    this.subscribeToStore();
   }
 
   setupEventListeners() {
     // Hide sidebar toggle (both sidebar and floating button)
-    this.hideSidebarBtn?.addEventListener('click', () => this.toggleSidebarVisibility());
-    this.floatingHideSidebarBtn?.addEventListener('click', () => this.toggleSidebarVisibility());
+    this.hideSidebarBtn?.addEventListener('click', () => this.store.toggle());
+    this.floatingHideSidebarBtn?.addEventListener('click', () => this.store.toggle());
 
     // Refresh button
     this.refreshBtn?.addEventListener('click', () => this.refreshIframe());
@@ -62,17 +67,27 @@ class SimpleLivePreviewManager {
       this.loadUrl();
     });
 
+    // Listen for events from Sidebar component
+    document.addEventListener('preview:refresh', () => this.refreshIframe());
+    document.addEventListener('preview:loadUrl', (e) => {
+      if (e.detail && e.detail.path !== undefined) {
+        this.loadUrlFromPath(e.detail.path);
+      }
+    });
+
+    // Legacy: Listen for sidebar state changes (for backward compatibility)
+    document.addEventListener('sidebar:stateChanged', (e) => {
+      if (e.detail) {
+        this.handleSidebarStateChange(e.detail);
+      }
+    });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       // Cmd/Ctrl + R for refresh
       if ((e.metaKey || e.ctrlKey) && e.key === 'r' && this.iframe && this.iframe.closest(`#${this.id}`)) {
         e.preventDefault();
         this.refreshIframe();
-      }
-      // Cmd/Ctrl + B to toggle sidebar panel
-      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-        e.preventDefault();
-        this.toggleSidebarVisibility();
       }
     });
 
@@ -129,53 +144,39 @@ class SimpleLivePreviewManager {
     }
   }
 
-  toggleSidebarVisibility() {
-    this.isSidebarHidden = !this.isSidebarHidden;
+  subscribeToStore() {
+    // Subscribe to sidebar store changes
+    this.store.shouldShowFloatingButton.subscribe(() => this.updateFloatingButton());
+    this.store.isOpen.subscribe(() => this.updateFloatingButton());
     
-    const sidebarPane = document.getElementById('sidebar-pane');
-    const previewPane = document.getElementById(this.id);
+    // Initial update
+    this.updateFloatingButton();
+  }
+
+  updateFloatingButton() {
+    const floatingBtn = this.floatingHideSidebarBtn;
+    const floatingIcon = this.floatingHideSidebarIcon;
+    const shouldShow = this.store.shouldShowFloatingButton.value;
     
-    if (sidebarPane && previewPane) {
-      if (this.isSidebarHidden) {
-        // Hide sidebar pane and make preview full width
-        sidebarPane.style.display = 'none';
-        previewPane.classList.remove('flex-1');
-        previewPane.classList.add('w-full');
-        
-        // Update button icons and titles
-        if (this.hideSidebarIcon) {
-          this.hideSidebarIcon.setAttribute('icon', 'ph:sidebar-simple-fill');
+    if (floatingBtn) {
+      if (shouldShow) {
+        // Show floating button when sidebar is closed
+        floatingBtn.style.display = 'flex';
+        // Update icon and title
+        if (floatingIcon) {
+          floatingIcon.setAttribute('icon', 'ph:sidebar-simple-fill');
         }
-        if (this.floatingHideSidebarIcon) {
-          this.floatingHideSidebarIcon.setAttribute('icon', 'ph:sidebar-simple-fill');
-        }
-        if (this.hideSidebarBtn) {
-          this.hideSidebarBtn.setAttribute('title', 'Show Sidebar');
-        }
-        if (this.floatingHideSidebarBtn) {
-          this.floatingHideSidebarBtn.setAttribute('title', 'Show Sidebar');
-        }
+        floatingBtn.setAttribute('title', 'Show Sidebar');
       } else {
-        // Show sidebar pane and restore original widths
-        sidebarPane.style.display = '';
-        previewPane.classList.remove('w-full');
-        previewPane.classList.add('flex-1');
-        
-        // Update button icons and titles
-        if (this.hideSidebarIcon) {
-          this.hideSidebarIcon.setAttribute('icon', 'ph:sidebar-simple');
-        }
-        if (this.floatingHideSidebarIcon) {
-          this.floatingHideSidebarIcon.setAttribute('icon', 'ph:sidebar-simple');
-        }
-        if (this.hideSidebarBtn) {
-          this.hideSidebarBtn.setAttribute('title', 'Hide Sidebar');
-        }
-        if (this.floatingHideSidebarBtn) {
-          this.floatingHideSidebarBtn.setAttribute('title', 'Hide Sidebar');
-        }
+        // Hide floating button when sidebar is open
+        floatingBtn.style.display = 'none';
       }
     }
+  }
+
+  toggleSidebarVisibility() {
+    // Use the store to toggle
+    this.store.toggle();
   }
 
   refreshIframe() {
@@ -191,7 +192,13 @@ class SimpleLivePreviewManager {
   loadUrl() {
     if (this.urlInput && this.iframe) {
       const path = this.urlInput.value.trim();
-      console.log('loadUrl called with path:', path);
+      this.loadUrlFromPath(path);
+    }
+  }
+
+  loadUrlFromPath(path) {
+    if (this.iframe) {
+      console.log('loadUrlFromPath called with path:', path);
       
       // Check if it's an external URL (starts with http:// or https://)
       if (path.startsWith('http://') || path.startsWith('https://')) {
@@ -201,8 +208,10 @@ class SimpleLivePreviewManager {
           // Open external URLs in a new tab
           console.log('Opening external URL in new tab:', path);
           window.open(path, '_blank');
-          // Clear the input
-          this.urlInput.value = '';
+          // Clear the input if it exists
+          if (this.urlInput) {
+            this.urlInput.value = '';
+          }
           return;
         }
       }
@@ -211,7 +220,18 @@ class SimpleLivePreviewManager {
       const newUrl = path ? baseUrl + '/' + path.replace(/^\//, '') : baseUrl;
       console.log('Loading URL in iframe:', newUrl);
       this.iframe.src = newUrl;
+      
+      // Update input if it exists
+      if (this.urlInput) {
+        this.urlInput.value = path;
+      }
     }
+  }
+
+  handleSidebarStateChange(state) {
+    // Legacy method for backward compatibility
+    console.log('Legacy sidebar state changed:', state);
+    // The floating button is now handled by updateFloatingButton()
   }
 
   handleIframeError() {

@@ -14,7 +14,7 @@ export default function BaseLayout(props: BaseLayoutProps) {
         <title>{props.title || "Treesap"}</title>
         <meta name="description" content={props.description || "A modern web application"} />
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
         <link rel="stylesheet" href="/styles/main.css" />
         {/* Sapling Islands */}
         <script type="module" src="https://sapling-is.land"></script>

@@ -37,10 +37,14 @@
     "commander": "^12.1.0",
     "dotenv": "^16.4.7",
     "hono": "^4.9.1",
-    "node-pty": "^1.1.0-beta34"
+    "node-pty": "^1.1.0-beta34",
+    "uuid": "^11.1.0",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/node": "^22.15.15",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.18.1",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"

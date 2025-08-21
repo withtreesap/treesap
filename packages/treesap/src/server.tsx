@@ -6,9 +6,11 @@ import { Welcome } from "./pages/Welcome.js";
 import { Code } from "./pages/Code.js";
 import { DevServerManager } from "./services/dev-server.js";
 import { TerminalService } from "./services/terminal.js";
+import { WebSocketTerminalService } from "./services/websocket.js";
 import * as path from 'node:path';
 import process from "node:process";
 import { fileURLToPath } from 'node:url';
+import type { Server } from 'http';
 
 export interface TreesapConfig {
   port?: number;
@@ -144,15 +146,90 @@ export async function startServer(config: TreesapConfig & { autoStartDev?: boole
     return c.json({ logs });
   });
 
-  // List active terminal sessions
+  // List active terminal sessions with WebSocket client info
   app.get("/api/terminal/sessions", (c: Context) => {
     const sessions = TerminalService.getAllSessions();
+    const wsActiveSessions = WebSocketTerminalService.getActiveSessions();
+    
     return c.json({
-      sessions: sessions.map(session => ({
-        id: session.id,
-        createdAt: session.createdAt,
-        lastActivity: session.lastActivity
-      }))
+      sessions: sessions.map(session => {
+        const wsInfo = wsActiveSessions.find(ws => ws.sessionId === session.id);
+        return {
+          id: session.id,
+          createdAt: session.createdAt,
+          lastActivity: session.lastActivity,
+          connectedClients: wsInfo ? wsInfo.clientCount : 0
+        };
+      }),
+      totalConnectedClients: WebSocketTerminalService.getConnectedClients()
+    });
+  });
+
+  // Get specific terminal session status
+  app.get("/api/terminal/sessions/:sessionId/status", (c: Context) => {
+    const sessionId = c.req.param('sessionId');
+    const session = TerminalService.getSession(sessionId);
+    
+    if (!session) {
+      return c.json({ error: "Session not found" }, 404);
+    }
+
+    const clients = WebSocketTerminalService.getSessionClients(sessionId);
+    
+    return c.json({
+      id: session.id,
+      createdAt: session.createdAt,
+      lastActivity: session.lastActivity,
+      connectedClients: clients.length,
+      clientIds: clients
+    });
+  });
+
+  // Send command to terminal via API
+  app.post("/api/terminal/sessions/:sessionId/command", async (c: Context) => {
+    const sessionId = c.req.param('sessionId');
+    const body = await c.req.json();
+    const { command } = body;
+
+    if (!command) {
+      return c.json({ error: "Command is required" }, 400);
+    }
+
+    // Get or create terminal session
+    let session = TerminalService.getSession(sessionId);
+    if (!session) {
+      session = TerminalService.createSession(sessionId);
+    }
+
+    const success = WebSocketTerminalService.sendCommandToSession(sessionId, command);
+    
+    if (success) {
+      return c.json({ 
+        success: true, 
+        message: `Command sent to session ${sessionId}`,
+        connectedClients: WebSocketTerminalService.getSessionClients(sessionId).length
+      });
+    } else {
+      return c.json({ error: "Failed to send command to terminal" }, 500);
+    }
+  });
+
+  // Get recent output from terminal session (for API clients)
+  app.get("/api/terminal/sessions/:sessionId/output", async (c: Context) => {
+    const sessionId = c.req.param('sessionId');
+    const session = TerminalService.getSession(sessionId);
+    
+    if (!session) {
+      return c.json({ error: "Session not found" }, 404);
+    }
+
+    // Note: This is a basic implementation. For production, you'd want to
+    // store recent output history in the TerminalService
+    return c.json({
+      sessionId,
+      message: "Output streaming available via WebSocket connection",
+      connectedClients: WebSocketTerminalService.getSessionClients(sessionId).length,
+      websocketUrl: `ws://${c.req.header('host')}/terminal/ws`
     });
   });
 
@@ -371,10 +448,22 @@ export async function startServer(config: TreesapConfig & { autoStartDev?: boole
 
   const { serve } = await import('@hono/node-server');
   
+  // Start the server and initialize WebSocket
+  const server = serve({
+    fetch: app.fetch,
+    port,
+  }) as Server;
+  
+  // Initialize WebSocket service
+  WebSocketTerminalService.initialize(server);
+  
   // Setup global graceful shutdown for all subprocess managers
   const setupGlobalShutdown = () => {
     const cleanup = async () => {
       console.log('\n🛑 Shutting down server and all subprocesses...');
+      
+      // Clean up WebSocket connections
+      WebSocketTerminalService.cleanup();
       
       // Stop Claude Code process if running
       if (claudeCodeManager) {
@@ -425,10 +514,6 @@ export async function startServer(config: TreesapConfig & { autoStartDev?: boole
   // Initialize terminal service cleanup
   TerminalService.setupGlobalCleanup();
   
-  serve({
-    fetch: app.fetch,
-    port,
-  });
-  
-  console.log(`\n🌳 Treesap server running at http://localhost:${port}\n`);
+  console.log(`\n🌳 Treesap server running at http://localhost:${port}`);
+  console.log(`🔌 WebSocket terminal server available at ws://localhost:${port}/terminal/ws\n`);
 }

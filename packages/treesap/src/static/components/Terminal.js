@@ -58,7 +58,10 @@ class TerminalManager {
   }
 
   setupXterm() {
-    // Create terminal instance with VS Code-like theme
+    // Detect mobile devices for responsive terminal setup
+    const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Create terminal instance with VS Code-like theme and responsive settings
     this.terminal = new Terminal({
       cursorBlink: true,
       fontSize: 12,
@@ -86,9 +89,14 @@ class TerminalManager {
         brightCyan: '#29b8db',
         brightWhite: '#ffffff'
       },
-      scrollback: 1000,
+      scrollback: isMobile ? 500 : 1000, // Smaller scrollback for mobile performance
       tabStopWidth: 4,
-      allowTransparency: false
+      allowTransparency: false,
+      // Mobile-specific options
+      ...(isMobile && {
+        convertEol: true,
+        disableStdin: false
+      })
     });
 
     // Open terminal in container
@@ -110,7 +118,20 @@ class TerminalManager {
     
     // Resize handler
     window.addEventListener('resize', () => {
-      this.fitTerminal();
+      // Add a small delay for mobile orientation changes
+      clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = setTimeout(() => {
+        this.fitTerminal();
+      }, 100);
+    });
+    
+    // Mobile orientation change handler
+    window.addEventListener('orientationchange', () => {
+      // Longer delay for orientation changes as they can be slower
+      clearTimeout(this.orientationTimeout);
+      this.orientationTimeout = setTimeout(() => {
+        this.fitTerminal();
+      }, 300);
     });
   }
 
@@ -120,10 +141,77 @@ class TerminalManager {
       setTimeout(() => {
         const containerRect = this.xtermContainer.getBoundingClientRect();
         if (containerRect.width > 0 && containerRect.height > 0) {
-          const cols = Math.floor(containerRect.width / 7.2); // Approximate character width for 12px font
-          const rows = Math.floor(containerRect.height / 14.4); // Approximate line height for 12px font
-          console.log(`Fitting terminal ${this.terminalId}: ${cols}x${rows} (container: ${containerRect.width}x${containerRect.height})`);
+          // Detect mobile devices for responsive sizing
+          const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          
+          // Use consistent font size 
+          const fontSize = 12;
+          
+          // Calculate character dimensions more accurately
+          // Create a temporary element to measure actual character size
+          const testElement = document.createElement('div');
+          testElement.style.fontFamily = this.terminal.options.fontFamily;
+          testElement.style.fontSize = `${fontSize}px`;
+          testElement.style.position = 'absolute';
+          testElement.style.visibility = 'hidden';
+          testElement.style.whiteSpace = 'pre';
+          testElement.textContent = 'M'; // Use 'M' as it's typically the widest character
+          document.body.appendChild(testElement);
+          
+          const charWidth = testElement.getBoundingClientRect().width;
+          const charHeight = testElement.getBoundingClientRect().height;
+          document.body.removeChild(testElement);
+          
+          // Calculate columns and rows based on actual character dimensions
+          const cols = Math.max(20, Math.floor(containerRect.width / charWidth)); // Minimum 20 columns
+          const rows = Math.max(10, Math.floor(containerRect.height / charHeight)); // Minimum 10 rows
+          
+          // Store previous dimensions to detect significant changes
+          const prevCols = this.lastCols || 0;
+          const prevRows = this.lastRows || 0;
+          const significantChange = Math.abs(cols - prevCols) > Math.max(10, prevCols * 0.3) || 
+                                   Math.abs(rows - prevRows) > Math.max(5, prevRows * 0.3);
+          
+          console.log(`Fitting terminal ${this.terminalId}: ${cols}x${rows} (container: ${containerRect.width}x${containerRect.height}, charSize: ${charWidth}x${charHeight}, mobile: ${isMobile})`);
+          
+          
+          // Resize the terminal
           this.terminal.resize(cols, rows);
+          
+          // Send resize notification to backend PTY
+          if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            const resizeMessage = {
+              type: 'resize',
+              sessionId: this.sessionId,
+              terminalId: this.terminalId,
+              cols: cols,
+              rows: rows
+            };
+            this.websocket.send(JSON.stringify(resizeMessage));
+          }
+          
+          // Force a refresh if there was a significant size change (like mobile rotation)
+          if (significantChange && (prevCols > 0 || prevRows > 0)) {
+            console.log(`Significant terminal size change detected, forcing refresh`);
+            // Small delay to ensure resize is processed, then refresh
+            setTimeout(() => {
+              if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+                // Send Ctrl+L to clear and refresh the display
+                const refreshMessage = {
+                  type: 'input',
+                  sessionId: this.sessionId,
+                  terminalId: this.terminalId,
+                  data: '\x0C' // Ctrl+L (form feed) to refresh
+                };
+                this.websocket.send(JSON.stringify(refreshMessage));
+              }
+            }, 100);
+          }
+          
+          // Store current dimensions for next comparison
+          this.lastCols = cols;
+          this.lastRows = rows;
+          
         } else {
           console.warn(`Terminal ${this.terminalId} container has zero dimensions, retrying...`);
           // Retry after a short delay
@@ -336,8 +424,8 @@ function initializeTerminals() {
   const saplingIslands = document.querySelectorAll('sapling-island');
   
   for (const island of saplingIslands) {
-    // Look for a div with bg-gray-900 class (terminal styling)
-    const terminalDiv = island.querySelector('div.bg-gray-900[id]');
+    // Look for a div with terminal ID (updated selector for new background class)
+    const terminalDiv = island.querySelector('div[id^="terminal-"]');
     if (terminalDiv && terminalDiv.id && terminalDiv.id.startsWith('terminal-')) {
       const terminalId = terminalDiv.id;
       console.log('Found terminal component with ID:', terminalId);

@@ -14,10 +14,12 @@ export interface WebSocketClient {
 }
 
 export interface WebSocketMessage {
-  type: 'join' | 'leave' | 'input' | 'ping' | 'pong';
+  type: 'join' | 'leave' | 'input' | 'resize' | 'ping' | 'pong';
   sessionId?: string;
   terminalId?: string;
   data?: string;
+  cols?: number;
+  rows?: number;
   timestamp?: number;
 }
 
@@ -114,6 +116,9 @@ export class WebSocketTerminalService {
         case 'input':
           this.handleInput(clientId, message);
           break;
+        case 'resize':
+          this.handleResize(clientId, message);
+          break;
         case 'ping':
           this.sendToClient(clientId, {
             type: 'pong',
@@ -209,6 +214,32 @@ export class WebSocketTerminalService {
         data: 'Failed to send input to terminal',
         timestamp: Date.now()
       });
+    }
+  }
+
+  private static handleResize(clientId: string, message: WebSocketMessage) {
+    const client = this.clients.get(clientId);
+    if (!client || !message.sessionId || message.cols === undefined || message.rows === undefined) return;
+
+    // Get the terminal session
+    const session = TerminalService.getSession(message.sessionId);
+    if (!session) {
+      console.error(`Session ${message.sessionId} not found for resize`);
+      return;
+    }
+
+    // Resize the PTY
+    try {
+      console.log(`Resizing terminal session ${message.sessionId} to ${message.cols}x${message.rows}`);
+      session.process.resize(message.cols, message.rows);
+      session.lastActivity = new Date();
+      
+      // Update session dimensions
+      session.cols = message.cols;
+      session.rows = message.rows;
+      
+    } catch (error) {
+      console.error(`Failed to resize session ${message.sessionId}:`, error);
     }
   }
 

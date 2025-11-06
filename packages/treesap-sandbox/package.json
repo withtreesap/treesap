@@ -1,0 +1,54 @@
+{
+  "name": "@treesap/sandbox",
+  "version": "0.1.0",
+  "description": "Secure sandboxed terminal server with WebSocket support for remote code execution",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "tsx --watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "clean": "rm -rf dist",
+    "example": "npm run build && node examples/basic-usage.js",
+    "example:dev": "tsx examples/basic-usage.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "terminal",
+    "sandbox",
+    "websocket",
+    "pty",
+    "remote-execution",
+    "hono",
+    "code-execution"
+  ],
+  "author": "Treesap Team",
+  "license": "MIT",
+  "dependencies": {
+    "@hono/node-server": "^1.13.1",
+    "hono": "^4.9.1",
+    "node-pty": "^1.1.0-beta34",
+    "uuid": "^11.1.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.15",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/withtreesap/treesap.git",
+    "directory": "packages/treesap-sandbox"
+  },
+  "bugs": {
+    "url": "https://github.com/withtreesap/treesap/issues"
+  },
+  "homepage": "https://github.com/withtreesap/treesap/tree/main/packages/treesap-sandbox#readme"
+}

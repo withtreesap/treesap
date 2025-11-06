@@ -1,0 +1,11 @@
+.vscode/
+.idea/
+*.swp
+*.swo
+*.log
+*.log*
+
+.DS_Store
+
+
+dist/

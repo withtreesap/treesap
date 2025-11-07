@@ -433,13 +433,17 @@ export function createServer(config: ServerConfig = {}) {
   // Cleanup on process exit
   process.on('SIGINT', async () => {
     console.log('\nShutting down...');
-    await manager.shutdown({ cleanup: false });
+    console.log('Cleaning up sandboxes...');
+    await manager.shutdown({ cleanup: true });
+    console.log('✅ Shutdown complete');
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
     console.log('\nShutting down...');
-    await manager.shutdown({ cleanup: false });
+    console.log('Cleaning up sandboxes...');
+    await manager.shutdown({ cleanup: true });
+    console.log('✅ Shutdown complete');
     process.exit(0);
   });
 

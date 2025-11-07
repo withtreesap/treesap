@@ -15,6 +15,9 @@
     "clean": "rm -rf dist .sandboxes",
     "example": "npm run build && node examples/basic-usage.js",
     "example:dev": "tsx examples/basic-usage.ts",
+    "example:client": "tsx examples/client-example.ts",
+    "example:ai-agent": "tsx examples/ai-agent-example.ts",
+    "example:claude": "tsx examples/test-claude-code.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

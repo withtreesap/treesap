@@ -1,0 +1,36 @@
+{
+  "name": "@treesap/terminal",
+  "version": "1.0.0",
+  "description": "Web-based terminal interface for remote sandboxes using node-pty",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/server.ts",
+    "start": "node dist/server.js",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "terminal",
+    "pty",
+    "xterm",
+    "websocket",
+    "sandbox"
+  ],
+  "dependencies": {
+    "@hono/node-server": "^1.13.1",
+    "@treesap/sandbox": "file:../sandbox",
+    "hono": "^4.9.1",
+    "node-pty": "^1.0.0",
+    "uuid": "^11.1.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.15",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,14 +1,11 @@
 {
   "name": "@treesap/terminal",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "Web-based terminal interface for remote sandboxes using node-pty",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": {
-    "treesap-terminal": "./dist/cli.js",
-    "terminal": "./dist/cli.js"
-  },
+  "bin": "./dist/cli.js",
   "files": [
     "dist",
     "public",

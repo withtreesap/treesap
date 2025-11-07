@@ -30,3 +30,5 @@ lerna-debug.log*
 dist/
 .claude/
 examples/
+
+.sandboxes/

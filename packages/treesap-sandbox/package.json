@@ -1,36 +1,38 @@
 {
   "name": "@treesap/sandbox",
-  "version": "0.1.0",
-  "description": "Secure sandboxed terminal server with WebSocket support for remote code execution",
+  "version": "1.0.0",
+  "description": "Self-hosted sandbox API for isolated code execution and file management",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "treesap-sandbox": "dist/cli.js"
+  },
   "scripts": {
-    "dev": "tsx --watch src/index.ts",
+    "dev": "tsx src/api-server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
-    "clean": "rm -rf dist",
+    "start": "node dist/api-server.js",
+    "clean": "rm -rf dist .sandboxes",
     "example": "npm run build && node examples/basic-usage.js",
     "example:dev": "tsx examples/basic-usage.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "terminal",
     "sandbox",
-    "websocket",
-    "pty",
-    "remote-execution",
+    "code-execution",
+    "file-operations",
+    "api",
+    "cloudflare-sandbox",
+    "self-hosted",
     "hono",
-    "code-execution"
+    "process-management"
   ],
-  "author": "Treesap Team",
+  "author": "TreeSap Team",
   "license": "MIT",
   "dependencies": {
     "@hono/node-server": "^1.13.1",
     "hono": "^4.9.1",
-    "node-pty": "^1.1.0-beta34",
-    "uuid": "^11.1.0",
-    "ws": "^8.18.3"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.15",

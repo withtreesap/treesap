@@ -1,58 +1,87 @@
 /**
- * Treesap Sandbox
+ * TreeSap Sandbox v1.0
  *
- * A secure sandboxed terminal server with WebSocket support for remote code execution.
- * This package provides a terminal endpoint server that exposes access to the underlying
- * file system through HTTP/WebSocket APIs.
+ * A self-hosted sandbox API for isolated code execution and file management.
+ * Provides a Cloudflare-style API for managing sandboxed environments.
  *
- * @example
+ * @example Server usage
  * ```typescript
- * import { startSandboxServer } from '@treesap/sandbox';
+ * import { startServer } from '@treesap/sandbox';
  *
  * // Start the sandbox server
- * const server = await startSandboxServer({
+ * const { server, manager } = await startServer({
  *   port: 3000,
- *   projectRoot: process.cwd()
+ *   basePath: './.sandboxes'
  * });
  * ```
  *
- * @example Using the terminal services directly
+ * @example Client SDK usage
  * ```typescript
- * import { TerminalService, WebSocketTerminalService } from '@treesap/sandbox';
+ * import { SandboxClient } from '@treesap/sandbox';
  *
- * // Create a terminal session
- * const session = TerminalService.createSession('my-session-id', {
- *   cwd: '/path/to/working/dir',
- *   cols: 80,
- *   rows: 24
- * });
+ * // Create a new sandbox
+ * const sandbox = await SandboxClient.create('http://localhost:3000');
  *
- * // Execute a command
- * TerminalService.executeCommand('my-session-id', 'ls -la');
+ * // Execute commands
+ * const result = await sandbox.exec('npm install');
+ * console.log(result.stdout);
  *
- * // Listen for output
- * session.eventEmitter.on('output', (data) => {
- *   console.log('Terminal output:', data);
- * });
+ * // File operations
+ * await sandbox.writeFile('package.json', JSON.stringify(pkg, null, 2));
+ * const files = await sandbox.listFiles();
+ *
+ * // Process management
+ * const server = await sandbox.startProcess('node server.js');
+ * const logs = await sandbox.streamProcessLogs(server.id);
+ *
+ * // Cleanup
+ * await sandbox.destroy({ cleanup: true });
  * ```
  *
  * @packageDocumentation
  */
 
-// Export server functionality
-export { startSandboxServer } from './server.js';
-export type { SandboxConfig } from './server.js';
+// ============================================================================
+// Server API
+// ============================================================================
 
-// Export terminal service
-export { TerminalService } from './terminal.js';
-export type {
-  TerminalSession,
-  PersistedSessionData
-} from './terminal.js';
+export { startServer, createServer } from './api-server';
+export type { ServerConfig } from './api-server';
 
-// Export WebSocket service
-export { WebSocketTerminalService } from './websocket.js';
+// ============================================================================
+// Client SDK
+// ============================================================================
+
+export { SandboxClient, parseSSEStream } from './client';
+export type { SandboxClientConfig, CreateSandboxResponse } from './client';
+
+// ============================================================================
+// Core Components
+// ============================================================================
+
+export { Sandbox } from './sandbox';
+export { SandboxManager } from './sandbox-manager';
+export { FileService } from './file-service';
+export { StreamService } from './stream-service';
+
+// ============================================================================
+// Type Exports
+// ============================================================================
+
 export type {
-  WebSocketClient,
-  WebSocketMessage
-} from './websocket.js';
+  SandboxConfig,
+  ProcessInfo,
+  ExecOptions,
+  ExecuteResponse,
+} from './sandbox';
+
+export type { SandboxManagerConfig } from './sandbox-manager';
+
+export type {
+  FileInfo,
+  ListFilesOptions,
+  ReadFileOptions,
+  WriteFileOptions,
+} from './file-service';
+
+export type { ExecEvent, ExecEventType, LogEvent } from './stream-service';

@@ -1,15 +1,19 @@
-# @treesap/sandbox
+# 🌳 TreeSap Sandbox
 
-A secure sandboxed terminal server with WebSocket support for remote code execution. This package provides a terminal endpoint server that exposes access to the underlying file system through HTTP/WebSocket APIs.
+A self-hosted sandbox API for isolated code execution and file management. Similar to Cloudflare's Sandbox SDK, but designed for self-hosting on your own infrastructure.
+
+Perfect for AI agents, code execution platforms, and automation tools that need secure, isolated environments.
 
 ## Features
 
-- 🔒 **Sandboxed Terminal Execution** - Secure terminal sessions with PTY support
-- 🔌 **WebSocket Support** - Real-time bidirectional communication
-- 📡 **REST API** - HTTP endpoints for terminal management
-- 🔄 **Session Management** - Automatic session cleanup and persistence
-- 📊 **Multi-client Support** - Multiple clients can connect to the same terminal session
-- ⏱️ **Session Timeout** - Automatic cleanup of inactive sessions (30 min default)
+- 🔒 **Folder-based isolation** - Each sandbox gets its own working directory
+- 📁 **File Operations API** - Read, write, list, and delete files
+- ⚡ **Command Execution** - Run commands with streaming output
+- 🔄 **Process Management** - Start, monitor, and kill background processes
+- 🌊 **Real-time Streaming** - Server-Sent Events for live output
+- 🎯 **Simple REST API** - Easy to integrate with any language
+- 📦 **TypeScript SDK** - Full-featured client library included
+- 🚀 **Self-hosted** - Run on your own servers, no cloud dependencies
 
 ## Installation
 
@@ -19,295 +23,471 @@ npm install @treesap/sandbox
 
 ## Quick Start
 
-### Starting the Server
-
-```typescript
-import { startSandboxServer } from '@treesap/sandbox';
-
-// Start the sandbox server
-const server = await startSandboxServer({
-  port: 3000,
-  projectRoot: process.cwd()
-});
-```
-
-### Using the REST API
+### Start the Server
 
 ```bash
-# List all terminal sessions
-curl http://localhost:3000/api/terminal/sessions
+# Using CLI
+npx treesap-sandbox --port 3000
 
-# Send a command to a session
-curl -X POST http://localhost:3000/api/terminal/sessions/my-session/command \
-  -H "Content-Type: application/json" \
-  -d '{"command":"ls -la"}'
+# Or programmatically
+import { startServer } from '@treesap/sandbox';
 
-# Get session status
-curl http://localhost:3000/api/terminal/sessions/my-session/status
-
-# Delete a session
-curl -X DELETE http://localhost:3000/terminal/session/my-session
+await startServer({ port: 3000 });
 ```
 
-### WebSocket Client Example
+### Use the Client SDK
 
 ```typescript
-import { WebSocket } from 'ws';
+import { SandboxClient } from '@treesap/sandbox';
 
-const ws = new WebSocket('ws://localhost:3000/terminal/ws');
+// Create a new sandbox
+const sandbox = await SandboxClient.create('http://localhost:3000');
 
-ws.on('open', () => {
-  // Join a terminal session
-  ws.send(JSON.stringify({
-    type: 'join',
-    sessionId: 'my-session',
-    terminalId: 'client-1'
-  }));
-});
+// Execute commands
+const result = await sandbox.exec('npm install');
+console.log(result.stdout);
 
-ws.on('message', (data) => {
-  const message = JSON.parse(data.toString());
+// File operations
+await sandbox.writeFile('hello.txt', 'Hello, World!');
+const content = await sandbox.readFile('hello.txt');
+const files = await sandbox.listFiles();
 
-  if (message.type === 'output') {
-    console.log('Terminal output:', message.content);
-  } else if (message.type === 'connected') {
-    console.log('Connected to session:', message.sessionId);
+// Background processes
+const server = await sandbox.startProcess('node server.js');
+const logs = await sandbox.streamProcessLogs(server.id);
 
-    // Send a command
-    ws.send(JSON.stringify({
-      type: 'input',
-      sessionId: 'my-session',
-      data: 'echo "Hello, World!"\n'
-    }));
-  }
-});
+// Cleanup
+await sandbox.destroy({ cleanup: true });
 ```
 
 ## API Reference
 
-### Server Configuration
+### Sandbox Management
+
+#### Create a Sandbox
 
 ```typescript
-interface SandboxConfig {
-  port?: number;         // Server port (default: 3000)
-  projectRoot?: string;  // Working directory (default: process.cwd())
+POST /sandbox
+```
+
+```typescript
+const sandbox = await SandboxClient.create('http://localhost:3000', {
+  workDir: '/custom/path',  // optional
+  timeout: 60000,           // optional, default timeout for commands
+});
+```
+
+#### Get Sandbox Info
+
+```typescript
+GET /sandbox/:id
+```
+
+```typescript
+const status = await sandbox.getStatus();
+console.log(status);
+// {
+//   id: 'abc123',
+//   workDir: '/path/to/sandbox',
+//   createdAt: 1234567890,
+//   processCount: 2,
+//   ...
+// }
+```
+
+#### List All Sandboxes
+
+```typescript
+GET /sandbox
+```
+
+#### Destroy a Sandbox
+
+```typescript
+DELETE /sandbox/:id?cleanup=true
+```
+
+```typescript
+await sandbox.destroy({ cleanup: true });
+```
+
+### Command Execution
+
+#### Execute Command
+
+```typescript
+POST /sandbox/:id/exec
+```
+
+```typescript
+const result = await sandbox.exec('ls -la', {
+  timeout: 5000,
+  cwd: '/custom/dir',
+  env: { NODE_ENV: 'production' }
+});
+
+console.log(result);
+// {
+//   success: true,
+//   stdout: '...',
+//   stderr: '...',
+//   exitCode: 0
+// }
+```
+
+#### Stream Command Output
+
+```typescript
+GET /sandbox/:id/exec-stream?command=npm%20install
+```
+
+```typescript
+import { parseSSEStream } from '@treesap/sandbox';
+
+const stream = await sandbox.execStream('npm install');
+
+for await (const event of parseSSEStream(stream)) {
+  switch (event.type) {
+    case 'stdout':
+      console.log('Output:', event.data);
+      break;
+    case 'stderr':
+      console.error('Error:', event.data);
+      break;
+    case 'complete':
+      console.log('Exit code:', event.exitCode);
+      break;
+  }
 }
 ```
 
-### REST API Endpoints
+### Process Management
 
-#### `GET /`
-Health check endpoint - returns server status and available endpoints.
+#### Start a Background Process
 
-#### `GET /api/terminal/sessions`
-List all active terminal sessions with their status.
+```typescript
+POST /sandbox/:id/process
+```
 
-**Response:**
-```json
-{
-  "sessions": [
-    {
-      "id": "my-session",
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "lastActivity": "2024-01-01T00:05:00.000Z",
-      "connectedClients": 2
-    }
-  ],
-  "totalConnectedClients": 2
+```typescript
+const process = await sandbox.startProcess('python -m http.server 8000');
+console.log('Started with PID:', process.pid);
+```
+
+#### List Processes
+
+```typescript
+GET /sandbox/:id/process
+```
+
+```typescript
+const processes = await sandbox.listProcesses();
+```
+
+#### Get Process Info
+
+```typescript
+GET /sandbox/:id/process/:processId
+```
+
+```typescript
+const info = await sandbox.getProcess(processId);
+```
+
+#### Kill a Process
+
+```typescript
+DELETE /sandbox/:id/process/:processId?signal=SIGTERM
+```
+
+```typescript
+await sandbox.killProcess(processId, 'SIGTERM');
+```
+
+#### Stream Process Logs
+
+```typescript
+GET /sandbox/:id/process/:processId/logs
+```
+
+```typescript
+const stream = await sandbox.streamProcessLogs(processId);
+
+for await (const event of parseSSEStream(stream)) {
+  console.log(`[${event.timestamp}] ${event.data}`);
 }
 ```
 
-#### `GET /api/terminal/sessions/:sessionId/status`
-Get detailed status of a specific terminal session.
+### File Operations
 
-#### `POST /api/terminal/sessions/:sessionId/command`
-Send a command to a terminal session (creates session if it doesn't exist).
+#### List Files
 
-**Request:**
-```json
-{
-  "command": "ls -la"
-}
+```typescript
+GET /sandbox/:id/files?path=.&recursive=true&pattern=*.js
 ```
 
-#### `POST /terminal/execute/:sessionId`
-Execute a command in a terminal session.
+```typescript
+const files = await sandbox.listFiles('.', {
+  recursive: true,
+  pattern: '*.js',
+  includeHidden: false
+});
 
-#### `POST /terminal/input/:sessionId`
-Send raw input to a terminal session.
+files.forEach(file => {
+  console.log(file.name, file.type, file.size);
+});
+```
 
-#### `GET /terminal/stream/:sessionId`
-SSE (Server-Sent Events) endpoint for streaming terminal output.
+#### Read File
 
-#### `DELETE /terminal/session/:sessionId`
-Destroy a terminal session.
+```typescript
+GET /sandbox/:id/files/path/to/file.txt
+```
 
-### WebSocket Protocol
+```typescript
+const content = await sandbox.readFile('package.json');
+console.log(content);
+```
 
-The WebSocket server is available at `ws://localhost:3000/terminal/ws`.
+#### Write File
 
-#### Message Types
+```typescript
+POST /sandbox/:id/files/path/to/file.txt
+```
 
-**Client → Server:**
+```typescript
+await sandbox.writeFile('README.md', '# Hello World');
+```
 
-- `join` - Join a terminal session
-  ```json
-  {
-    "type": "join",
-    "sessionId": "my-session",
-    "terminalId": "client-1"
+#### Delete File
+
+```typescript
+DELETE /sandbox/:id/files/path/to/file.txt?recursive=true
+```
+
+```typescript
+await sandbox.deleteFile('node_modules', { recursive: true });
+```
+
+## Use Cases
+
+### AI Agent Code Execution
+
+```typescript
+const sandbox = await SandboxClient.create('http://localhost:3000');
+
+// Agent writes code
+await sandbox.writeFile('script.py', `
+import pandas as pd
+print(pd.__version__)
+`);
+
+// Agent installs dependencies
+await sandbox.exec('pip install pandas');
+
+// Agent runs code
+const result = await sandbox.exec('python script.py');
+console.log(result.stdout);
+
+// Cleanup
+await sandbox.destroy({ cleanup: true });
+```
+
+### Running Tests in Isolation
+
+```typescript
+const sandbox = await SandboxClient.create('http://localhost:3000');
+
+// Clone repo
+await sandbox.exec('git clone https://github.com/user/repo.git');
+await sandbox.exec('cd repo && npm install');
+
+// Run tests
+const testResult = await sandbox.exec('cd repo && npm test');
+
+console.log('Tests passed:', testResult.success);
+```
+
+### Long-Running Services
+
+```typescript
+const sandbox = await SandboxClient.create('http://localhost:3000');
+
+// Start a web server
+const server = await sandbox.startProcess('node server.js');
+
+// Monitor logs in real-time
+const logStream = await sandbox.streamProcessLogs(server.id);
+
+for await (const log of parseSSEStream(logStream)) {
+  console.log('[Server]', log.data);
+
+  if (log.data.includes('Server started')) {
+    console.log('Server is ready!');
+    break;
   }
-  ```
+}
 
-- `leave` - Leave a terminal session
-  ```json
-  {
-    "type": "leave",
-    "sessionId": "my-session"
-  }
-  ```
+// Later: stop the server
+await sandbox.killProcess(server.id);
+```
 
-- `input` - Send input to terminal
-  ```json
-  {
-    "type": "input",
-    "sessionId": "my-session",
-    "data": "ls -la\n"
-  }
-  ```
+## Server Configuration
 
-- `resize` - Resize terminal
-  ```json
-  {
-    "type": "resize",
-    "sessionId": "my-session",
-    "cols": 80,
-    "rows": 24
-  }
-  ```
+### CLI Options
 
-- `ping` - Ping the server
-  ```json
-  {
-    "type": "ping",
-    "timestamp": 1234567890
-  }
-  ```
+```bash
+treesap-sandbox [options]
 
-**Server → Client:**
+Options:
+  -p, --port <port>            Port to listen on (default: 3000)
+  -h, --host <host>            Host to bind to (default: 0.0.0.0)
+  -b, --base-path <path>       Base path for sandbox folders (default: ./.sandboxes)
+  -m, --max-sandboxes <num>    Maximum number of sandboxes (default: 100)
+  --cors                       Enable CORS (default: false)
+  --help                       Show this help message
+```
 
-- `connected` - Connection confirmed
-- `output` - Terminal output
-- `exit` - Process exited
-- `error` - Error occurred
-- `clients_count` - Number of connected clients
-- `pong` - Response to ping
-- `session_closed` - Session was closed
+### Programmatic Configuration
+
+```typescript
+import { startServer } from '@treesap/sandbox';
+
+const { server, manager } = await startServer({
+  port: 3000,
+  host: '0.0.0.0',
+  basePath: './.sandboxes',
+  maxSandboxes: 100,
+  cors: true,
+});
+
+// Access sandbox manager directly
+const stats = manager.getStats();
+console.log('Active sandboxes:', stats.totalSandboxes);
+```
+
+## Architecture
+
+TreeSap Sandbox uses a simple, lightweight architecture:
+
+```
+┌─────────────────────────────────────┐
+│         Client SDK / API            │
+│    (HTTP REST + Server-Sent Events) │
+└──────────────┬──────────────────────┘
+               │
+               │ HTTP/REST
+               │
+┌──────────────▼──────────────────────┐
+│         API Server (Hono)           │
+│  - Sandbox Management               │
+│  - Command Execution                │
+│  - Process Management               │
+│  - File Operations                  │
+└──────────────┬──────────────────────┘
+               │
+               │
+┌──────────────▼──────────────────────┐
+│       Sandbox Manager               │
+│  - Creates isolated sandboxes       │
+│  - Manages lifecycle                │
+│  - Auto-cleanup                     │
+└──────────────┬──────────────────────┘
+               │
+               │
+┌──────────────▼──────────────────────┐
+│     Individual Sandboxes            │
+│  - Isolated working directory       │
+│  - Process spawning (child_process) │
+│  - File operations (fs)             │
+└─────────────────────────────────────┘
+```
+
+### Security Model
+
+- **Folder-based isolation**: Each sandbox operates in its own directory
+- **Path traversal prevention**: File operations are validated to prevent `../` attacks
+- **Process limits**: Configurable max processes per sandbox
+- **Automatic cleanup**: Idle sandboxes are cleaned up after 30 minutes
+- **Resource monitoring**: Optional timeout limits for commands
+
+> ⚠️ **Note**: This is folder-based isolation, not container-based. For production use with untrusted code, consider running the server inside a Docker container or VM for an additional security layer.
+
+## Comparison with Cloudflare Sandbox SDK
+
+| Feature | TreeSap Sandbox | Cloudflare Sandbox |
+|---------|----------------|-------------------|
+| Self-hosted | ✅ Yes | ❌ Cloud only |
+| Folder isolation | ✅ Yes | Container-based |
+| File operations | ✅ Full API | ✅ Full API |
+| Command execution | ✅ Yes | ✅ Yes |
+| Process management | ✅ Yes | ✅ Yes |
+| Streaming output | ✅ SSE | ✅ SSE |
+| Code interpreters | ⚠️ Planned | ✅ Python/JS |
+| Public URLs | ❌ No | ✅ Yes |
+| Platform | Node.js | Cloudflare Workers |
 
 ## Advanced Usage
 
-### Using Terminal Service Directly
+### Using Core Components Directly
 
 ```typescript
-import { TerminalService } from '@treesap/sandbox';
+import { Sandbox, FileService } from '@treesap/sandbox';
 
-// Create a terminal session
-const session = TerminalService.createSession('my-session', {
-  cwd: '/path/to/working/dir',
-  cols: 80,
-  rows: 24
+// Create a sandbox directly (without server)
+const sandbox = new Sandbox({
+  workDir: '/tmp/my-sandbox',
+  timeout: 30000,
 });
 
-// Execute a command
-TerminalService.executeCommand('my-session', 'ls -la');
+await sandbox.initialize();
 
-// Listen for output
-session.eventEmitter.on('output', (data) => {
-  if (data.type === 'output') {
-    console.log('Output:', data.content);
-  } else if (data.type === 'exit') {
-    console.log('Process exited with code:', data.code);
-  }
-});
+// Execute commands
+const result = await sandbox.exec('ls -la');
 
-// Clean up when done
-TerminalService.destroySession('my-session');
+// Use file service
+const fileService = new FileService(sandbox.workDir);
+await fileService.writeFile('test.txt', 'Hello!');
+const files = await fileService.listFiles();
+
+// Cleanup
+await sandbox.destroy({ cleanup: true });
 ```
 
-### Custom WebSocket Integration
+### Custom Server Integration
 
 ```typescript
-import { WebSocketTerminalService, TerminalService } from '@treesap/sandbox';
-import { createServer } from 'http';
+import { createServer, SandboxManager } from '@treesap/sandbox';
+import { serve } from '@hono/node-server';
 
-const server = createServer();
+const { app, manager } = createServer({
+  basePath: '/custom/sandboxes',
+  maxSandboxes: 50,
+});
 
-// Initialize WebSocket service with your HTTP server
-WebSocketTerminalService.initialize(server);
+// Add custom routes
+app.get('/custom-endpoint', (c) => {
+  const stats = manager.getStats();
+  return c.json({ stats });
+});
 
-// Set up terminal service cleanup
-TerminalService.setupGlobalCleanup();
-
-server.listen(3000);
+// Start server
+serve({ fetch: app.fetch, port: 3000 });
 ```
 
-## Examples
+## Contributing
 
-Check out the `examples/` directory for complete working examples:
-
-- **basic-usage.ts** - Simple server setup with API examples
-- **websocket-client.html** - Web-based terminal client
-
-To run the basic example:
-
-```bash
-cd packages/treesap-sandbox
-
-# Option 1: Run with tsx (development)
-npm run example:dev
-
-# Option 2: Build and run
-npm run example
-```
-
-Then open `examples/websocket-client.html` in your browser to interact with the terminal via WebSocket.
-
-## Security Considerations
-
-⚠️ **Important Security Notes:**
-
-1. **Sandbox Isolation**: This package provides terminal access to the underlying file system. Deploy behind proper authentication and authorization.
-
-2. **Network Access**: By default, the server binds to all network interfaces. Consider using a reverse proxy or firewall for production deployments.
-
-3. **Command Execution**: Any command sent to the terminal will be executed with the permissions of the process running the server.
-
-4. **Session Management**: Sessions are automatically cleaned up after 30 minutes of inactivity, but you should implement your own session validation.
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Build the package
-npm run build
-
-# Run in development mode
-npm run dev
-
-# Clean build artifacts
-npm run clean
-```
+Contributions are welcome! Please check out the [GitHub repository](https://github.com/withtreesap/treesap) for more information.
 
 ## License
 
 MIT
 
-## Contributing
+## Related Projects
 
-Contributions are welcome! Please check out the [main Treesap repository](https://github.com/withtreesap/treesap) for guidelines.
+- [Cloudflare Sandbox SDK](https://developers.cloudflare.com/sandbox/) - Cloud-based sandbox execution
+- [TreeSap](https://github.com/withtreesap/treesap) - AI agent framework
 
-## Related Packages
+---
 
-- [treesap](https://www.npmjs.com/package/treesap) - The main Treesap framework
+Built with ❤️ by the TreeSap Team

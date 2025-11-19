@@ -1,6 +1,6 @@
 {
   "name": "@treesap/sandbox",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Self-hosted sandbox API for isolated code execution and file management",
   "type": "module",
   "main": "dist/index.js",

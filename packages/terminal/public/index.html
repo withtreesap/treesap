@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Treesap Terminal</title>
+
+  <!-- xterm.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      overflow: hidden;
+    }
+
+    #header {
+      background-color: #252526;
+      padding: 12px 20px;
+      border-bottom: 1px solid #3e3e42;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #cccccc;
+    }
+
+    #controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    #status {
+      font-size: 12px;
+      color: #858585;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #858585;
+    }
+
+    .status-indicator.connected {
+      background-color: #4ec9b0;
+    }
+
+    .status-indicator.disconnected {
+      background-color: #f48771;
+    }
+
+    button {
+      background-color: #0e639c;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 2px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #1177bb;
+    }
+
+    button:disabled {
+      background-color: #3e3e42;
+      color: #858585;
+      cursor: not-allowed;
+    }
+
+    #session-info {
+      font-size: 11px;
+      color: #858585;
+    }
+
+    #terminal-container {
+      height: calc(100vh - 60px);
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    #terminal {
+      width: 100%;
+      height: 100%;
+    }
+
+    .xterm {
+      height: 100%;
+      padding: 10px;
+    }
+
+    .xterm-viewport {
+      overflow-y: auto;
+    }
+
+    #error-banner {
+      background-color: #f48771;
+      color: #000;
+      padding: 10px 20px;
+      display: none;
+      font-size: 13px;
+    }
+
+    #error-banner.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="error-banner"></div>
+
+  <div id="header">
+    <div>
+      <h1>🌲 Treesap Terminal</h1>
+    </div>
+    <div id="controls">
+      <div id="session-info"></div>
+      <div id="status">
+        <span class="status-indicator"></span>
+        <span id="status-text">Disconnected</span>
+      </div>
+      <button id="new-session-btn">New Session</button>
+      <button id="reconnect-btn" disabled>Reconnect</button>
+    </div>
+  </div>
+
+  <div id="terminal-container">
+    <div id="terminal"></div>
+  </div>
+
+  <!-- xterm.js and addons -->
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-web-links@0.9.0/lib/xterm-addon-web-links.js"></script>
+
+  <script>
+    // Terminal client implementation
+    class TerminalClient {
+      constructor() {
+        this.ws = null;
+        this.term = null;
+        this.fitAddon = null;
+        this.sessionId = this.generateSessionId();
+        this.terminalId = this.generateTerminalId();
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 5;
+
+        this.init();
+      }
+
+      generateSessionId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('sessionId') || this.generateUUID();
+      }
+
+      generateTerminalId() {
+        return 'terminal-' + Math.random().toString(36).substr(2, 9);
+      }
+
+      generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          const r = Math.random() * 16 | 0;
+          const v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+
+      init() {
+        // Create terminal
+        this.term = new Terminal({
+          cursorBlink: true,
+          fontSize: 14,
+          fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+          theme: {
+            background: '#1e1e1e',
+            foreground: '#d4d4d4',
+            cursor: '#d4d4d4',
+            black: '#000000',
+            red: '#cd3131',
+            green: '#0dbc79',
+            yellow: '#e5e510',
+            blue: '#2472c8',
+            magenta: '#bc3fbc',
+            cyan: '#11a8cd',
+            white: '#e5e5e5',
+            brightBlack: '#666666',
+            brightRed: '#f14c4c',
+            brightGreen: '#23d18b',
+            brightYellow: '#f5f543',
+            brightBlue: '#3b8eea',
+            brightMagenta: '#d670d6',
+            brightCyan: '#29b8db',
+            brightWhite: '#e5e5e5'
+          }
+        });
+
+        // Add fit addon
+        this.fitAddon = new FitAddon.FitAddon();
+        this.term.loadAddon(this.fitAddon);
+
+        // Add web links addon
+        this.term.loadAddon(new WebLinksAddon.WebLinksAddon());
+
+        // Open terminal
+        this.term.open(document.getElementById('terminal'));
+        this.fitAddon.fit();
+
+        // Handle terminal input
+        this.term.onData((data) => {
+          this.sendInput(data);
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+          this.fitAddon.fit();
+          this.sendResize();
+        });
+
+        // Connect WebSocket
+        this.connect();
+
+        // Set up UI handlers
+        this.setupUI();
+      }
+
+      setupUI() {
+        document.getElementById('new-session-btn').addEventListener('click', () => {
+          this.sessionId = this.generateUUID();
+          this.reconnect();
+        });
+
+        document.getElementById('reconnect-btn').addEventListener('click', () => {
+          this.reconnect();
+        });
+      }
+
+      connect() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/terminal/ws`;
+
+        this.updateStatus('connecting', 'Connecting...');
+
+        this.ws = new WebSocket(wsUrl);
+
+        this.ws.onopen = () => {
+          this.reconnectAttempts = 0;
+          this.updateStatus('connected', 'Connected');
+          this.join();
+        };
+
+        this.ws.onmessage = (event) => {
+          this.handleMessage(JSON.parse(event.data));
+        };
+
+        this.ws.onclose = () => {
+          this.updateStatus('disconnected', 'Disconnected');
+          this.attemptReconnect();
+        };
+
+        this.ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          this.showError('WebSocket connection error');
+        };
+      }
+
+      join() {
+        this.send({
+          type: 'join',
+          sessionId: this.sessionId,
+          terminalId: this.terminalId,
+          cols: this.term.cols,
+          rows: this.term.rows
+        });
+      }
+
+      handleMessage(message) {
+        switch (message.type) {
+          case 'connected':
+            this.term.clear();
+            this.updateSessionInfo(message.sessionId, message.pid);
+            break;
+
+          case 'output':
+            this.term.write(message.content);
+            break;
+
+          case 'exit':
+            this.term.writeln(`\r\n\x1b[33mProcess exited with code ${message.code}\x1b[0m`);
+            this.showError(`Session exited with code ${message.code}`);
+            break;
+
+          case 'error':
+            this.showError(message.message);
+            break;
+
+          case 'pong':
+            // Keepalive response
+            break;
+
+          default:
+            console.warn('Unknown message type:', message.type);
+        }
+      }
+
+      sendInput(data) {
+        this.send({
+          type: 'input',
+          sessionId: this.sessionId,
+          data
+        });
+      }
+
+      sendResize() {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          this.send({
+            type: 'resize',
+            sessionId: this.sessionId,
+            cols: this.term.cols,
+            rows: this.term.rows
+          });
+        }
+      }
+
+      send(message) {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          this.ws.send(JSON.stringify(message));
+        }
+      }
+
+      updateStatus(status, text) {
+        const indicator = document.querySelector('.status-indicator');
+        const statusText = document.getElementById('status-text');
+        const reconnectBtn = document.getElementById('reconnect-btn');
+
+        indicator.className = `status-indicator ${status}`;
+        statusText.textContent = text;
+
+        reconnectBtn.disabled = status === 'connected';
+      }
+
+      updateSessionInfo(sessionId, pid) {
+        const info = document.getElementById('session-info');
+        info.textContent = `Session: ${sessionId.substring(0, 8)}... | PID: ${pid}`;
+      }
+
+      showError(message) {
+        const banner = document.getElementById('error-banner');
+        banner.textContent = message;
+        banner.classList.add('show');
+
+        setTimeout(() => {
+          banner.classList.remove('show');
+        }, 5000);
+      }
+
+      attemptReconnect() {
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.reconnectAttempts++;
+          const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+
+          this.updateStatus('disconnected', `Reconnecting in ${delay/1000}s... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+
+          setTimeout(() => {
+            this.connect();
+          }, delay);
+        } else {
+          this.updateStatus('disconnected', 'Connection lost');
+        }
+      }
+
+      reconnect() {
+        if (this.ws) {
+          this.ws.close();
+        }
+        this.reconnectAttempts = 0;
+        this.connect();
+      }
+
+      // Keepalive ping
+      startKeepalive() {
+        setInterval(() => {
+          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.send({ type: 'ping' });
+          }
+        }, 30000); // Ping every 30 seconds
+      }
+    }
+
+    // Initialize terminal client
+    const client = new TerminalClient();
+    client.startKeepalive();
+
+    // Focus terminal
+    client.term.focus();
+
+    // Prevent accidental page refresh/close
+    window.addEventListener('beforeunload', (e) => {
+      // Show confirmation dialog when user tries to refresh or close
+      e.preventDefault();
+      // Modern browsers require setting returnValue
+      e.returnValue = '';
+      // Some browsers show custom message (though most ignore it now)
+      return 'Are you sure you want to leave? Your terminal session will be disconnected.';
+    });
+
+    // Prevent default refresh shortcuts (Cmd+R, F5, Ctrl+R)
+    window.addEventListener('keydown', (e) => {
+      // Cmd+R or Ctrl+R or F5
+      if ((e.metaKey && e.key === 'r') || (e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+        e.preventDefault();
+        // Show custom confirmation
+        if (confirm('Are you sure you want to refresh? Your terminal session will be disconnected.')) {
+          window.location.reload();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

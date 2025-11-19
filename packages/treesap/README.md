@@ -4,6 +4,8 @@
 
 Treesap is a revolutionary development platform that enables multiple AI agents and human developers to collaborate in real-time through persistent terminal sessions and WebSocket-based coordination. Built for the future of software development where AI agents work alongside humans in coordinated teams.
 
+> ⚠️ **Warning**: This package is experimental and exposes terminal sessions to the local network via WebSocket. Anyone on your network can execute commands on your machine. Proceed with caution.
+
 ## 🌟 Key Features
 
 - **Multi-Agent Terminal Orchestration** - Multiple AI agents can work simultaneously across different terminal sessions

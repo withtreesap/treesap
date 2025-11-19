@@ -1,0 +1,55 @@
+{
+  "name": "@treesap/terminal",
+  "version": "0.1.5",
+  "description": "Web-based terminal interface for remote sandboxes using node-pty",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": "./dist/cli.js",
+  "files": [
+    "dist",
+    "public",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js",
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "terminal",
+    "pty",
+    "xterm",
+    "websocket",
+    "sandbox",
+    "cli"
+  ],
+  "author": "TreeSap",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/withtreesap/treesap.git",
+    "directory": "packages/terminal"
+  },
+  "bugs": {
+    "url": "https://github.com/withtreesap/treesap/issues"
+  },
+  "homepage": "https://github.com/withtreesap/treesap/tree/main/packages/terminal#readme",
+  "dependencies": {
+    "@hono/node-server": "^1.13.1",
+    "hono": "^4.9.1",
+    "node-pty": "^1.0.0",
+    "uuid": "^11.1.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.15",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

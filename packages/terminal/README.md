@@ -2,6 +2,8 @@
 
 Web-based terminal interface for remote sandboxes using node-pty, WebSockets, and xterm.js.
 
+> ⚠️ **Warning**: This package is experimental and exposes a terminal to the local network. Anyone on your network can execute commands on your machine. No authentication is included. Proceed with caution.
+
 ## Features
 
 - 🖥️ **Full PTY Support**: Real terminal emulation using node-pty

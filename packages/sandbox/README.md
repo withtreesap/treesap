@@ -4,6 +4,8 @@ A self-hosted sandbox API for isolated code execution and file management. Simil
 
 Perfect for AI agents, code execution platforms, and automation tools that need secure, isolated environments.
 
+> ⚠️ **Warning**: This package is experimental and exposes your machine to the local network. It executes arbitrary code with folder-based isolation only (not containerized). Proceed with caution.
+
 ## Features
 
 - 🔒 **Folder-based isolation** - Each sandbox gets its own working directory

@@ -85,3 +85,17 @@ export type {
 } from './file-service';
 
 export type { ExecEvent, ExecEventType, LogEvent } from './stream-service';
+
+// ============================================================================
+// Auth & Middleware
+// ============================================================================
+
+export { createAuthMiddleware, parseApiKeysFromEnv } from './auth-middleware';
+export type { AuthConfig } from './auth-middleware';
+
+// ============================================================================
+// HTTP Exposure
+// ============================================================================
+
+export { HttpExposureService } from './http-exposure-service';
+export type { HttpExposureConfig, ExposedEndpoint } from './http-exposure-service';

@@ -5,6 +5,13 @@ import { ExecEvent, LogEvent } from './stream-service';
 export interface SandboxClientConfig {
   baseUrl: string;
   sandboxId?: string;
+  apiKey?: string;
+}
+
+export interface CreateSandboxOptions {
+  apiKey?: string;
+  env?: Record<string, string>;
+  timeout?: number;
 }
 
 export interface CreateSandboxResponse {
@@ -15,27 +22,47 @@ export interface CreateSandboxResponse {
 
 /**
  * Client library for interacting with TreeSap Sandbox API
- * Similar to @cloudflare/sandbox SDK
  */
 export class SandboxClient {
   private baseUrl: string;
+  private apiKey?: string;
   public readonly id: string;
 
   constructor(config: SandboxClientConfig) {
     this.baseUrl = config.baseUrl.replace(/\/$/, ''); // Remove trailing slash
     this.id = config.sandboxId || '';
+    this.apiKey = config.apiKey;
+  }
+
+  /**
+   * Get headers for API requests (includes API key if configured)
+   */
+  private getHeaders(contentType?: string): Record<string, string> {
+    const headers: Record<string, string> = {};
+    if (contentType) {
+      headers['Content-Type'] = contentType;
+    }
+    if (this.apiKey) {
+      headers['X-API-Key'] = this.apiKey;
+    }
+    return headers;
   }
 
   /**
    * Create a new sandbox instance
    */
-  static async create(baseUrl: string, config?: any): Promise<SandboxClient> {
+  static async create(baseUrl: string, options: CreateSandboxOptions = {}): Promise<SandboxClient> {
     const url = `${baseUrl.replace(/\/$/, '')}/sandbox`;
+
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (options.apiKey) {
+      headers['X-API-Key'] = options.apiKey;
+    }
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(config || {}),
+      headers,
+      body: JSON.stringify({ env: options.env, timeout: options.timeout }),
     });
 
     if (!response.ok) {
@@ -48,14 +75,15 @@ export class SandboxClient {
     return new SandboxClient({
       baseUrl,
       sandboxId: data.id,
+      apiKey: options.apiKey,
     });
   }
 
   /**
-   * Get existing sandbox
+   * Get existing sandbox by ID
    */
-  static fromId(baseUrl: string, sandboxId: string): SandboxClient {
-    return new SandboxClient({ baseUrl, sandboxId });
+  static fromId(baseUrl: string, sandboxId: string, apiKey?: string): SandboxClient {
+    return new SandboxClient({ baseUrl, sandboxId, apiKey });
   }
 
   // ============================================================================
@@ -70,7 +98,7 @@ export class SandboxClient {
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders('application/json'),
       body: JSON.stringify({ command, ...options }),
     });
 
@@ -93,7 +121,7 @@ export class SandboxClient {
 
     const url = `${this.baseUrl}/sandbox/${this.id}/exec-stream?${params}`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: this.getHeaders() });
 
     if (!response.ok) {
       const error = await response.json() as any;
@@ -119,7 +147,7 @@ export class SandboxClient {
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders('application/json'),
       body: JSON.stringify({ command, ...options }),
     });
 
@@ -137,7 +165,7 @@ export class SandboxClient {
   async listProcesses(): Promise<ProcessInfo[]> {
     const url = `${this.baseUrl}/sandbox/${this.id}/process`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: this.getHeaders() });
 
     if (!response.ok) {
       const error = await response.json() as any;
@@ -154,7 +182,7 @@ export class SandboxClient {
   async getProcess(processId: string): Promise<ProcessInfo> {
     const url = `${this.baseUrl}/sandbox/${this.id}/process/${processId}`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: this.getHeaders() });
 
     if (!response.ok) {
       const error = await response.json() as any;
@@ -170,7 +198,7 @@ export class SandboxClient {
   async killProcess(processId: string, signal: string = 'SIGTERM'): Promise<void> {
     const url = `${this.baseUrl}/sandbox/${this.id}/process/${processId}?signal=${signal}`;
 
-    const response = await fetch(url, { method: 'DELETE' });
+    const response = await fetch(url, { method: 'DELETE', headers: this.getHeaders() });
 
     if (!response.ok) {
       const error = await response.json() as any;
@@ -196,7 +224,7 @@ export class SandboxClient {
   async streamProcessLogs(processId: string): Promise<ReadableStream> {
     const url = `${this.baseUrl}/sandbox/${this.id}/process/${processId}/logs`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: this.getHeaders() });
 
     if (!response.ok) {
       const error = await response.json() as any;
@@ -248,7 +276,7 @@ export class SandboxClient {
 
     const url = `${this.baseUrl}/sandbox/${this.id}/files?${params}`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: this.getHeaders() });
 
     if (!response.ok) {
       const error = await response.json() as any;
@@ -265,7 +293,7 @@ export class SandboxClient {
   async readFile(path: string): Promise<string> {
     const url = `${this.baseUrl}/sandbox/${this.id}/files/${path}`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: this.getHeaders() });
 
     if (!response.ok) {
       const error = await response.json() as any;
@@ -284,7 +312,7 @@ export class SandboxClient {
 
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getHeaders('application/json'),
       body: JSON.stringify({ content }),
     });
 
@@ -305,11 +333,121 @@ export class SandboxClient {
 
     const url = `${this.baseUrl}/sandbox/${this.id}/files/${path}?${params}`;
 
-    const response = await fetch(url, { method: 'DELETE' });
+    const response = await fetch(url, { method: 'DELETE', headers: this.getHeaders() });
 
     if (!response.ok) {
       const error = await response.json() as any;
       throw new Error(error.error || 'Failed to delete file');
+    }
+  }
+
+  // ============================================================================
+  // Environment Variable Management
+  // ============================================================================
+
+  /**
+   * Set environment variables in the sandbox
+   */
+  async setEnv(variables: Record<string, string>): Promise<void> {
+    const url = `${this.baseUrl}/sandbox/${this.id}/env`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: this.getHeaders('application/json'),
+      body: JSON.stringify({ variables }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json() as any;
+      throw new Error(error.error || 'Failed to set environment variables');
+    }
+  }
+
+  /**
+   * Get list of environment variable names (not values for security)
+   */
+  async listEnv(): Promise<string[]> {
+    const url = `${this.baseUrl}/sandbox/${this.id}/env`;
+
+    const response = await fetch(url, { headers: this.getHeaders() });
+
+    if (!response.ok) {
+      const error = await response.json() as any;
+      throw new Error(error.error || 'Failed to list environment variables');
+    }
+
+    const data = await response.json() as any;
+    return data.variables as string[];
+  }
+
+  /**
+   * Unset (remove) an environment variable
+   */
+  async unsetEnv(key: string): Promise<void> {
+    const url = `${this.baseUrl}/sandbox/${this.id}/env/${encodeURIComponent(key)}`;
+
+    const response = await fetch(url, { method: 'DELETE', headers: this.getHeaders() });
+
+    if (!response.ok) {
+      const error = await response.json() as any;
+      throw new Error(error.error || 'Failed to unset environment variable');
+    }
+  }
+
+  // ============================================================================
+  // HTTP Exposure
+  // ============================================================================
+
+  /**
+   * Expose a sandbox port via HTTP and return the public URL
+   */
+  async exposeHttp(port: number): Promise<string> {
+    const url = `${this.baseUrl}/sandbox/${this.id}/expose`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: this.getHeaders('application/json'),
+      body: JSON.stringify({ port }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json() as any;
+      throw new Error(error.error || 'Failed to expose HTTP port');
+    }
+
+    const data = await response.json() as any;
+    return data.url as string;
+  }
+
+  /**
+   * Get list of exposed HTTP endpoints
+   */
+  async listExposures(): Promise<Array<{ sandboxId: string; port: number; publicUrl: string }>> {
+    const url = `${this.baseUrl}/sandbox/${this.id}/expose`;
+
+    const response = await fetch(url, { headers: this.getHeaders() });
+
+    if (!response.ok) {
+      const error = await response.json() as any;
+      throw new Error(error.error || 'Failed to list exposures');
+    }
+
+    const data = await response.json() as any;
+    return data.exposures || [];
+  }
+
+  /**
+   * Remove HTTP exposure for a specific port (or all if port is undefined)
+   */
+  async unexposeHttp(port?: number): Promise<void> {
+    const params = port ? `?port=${port}` : '';
+    const url = `${this.baseUrl}/sandbox/${this.id}/expose${params}`;
+
+    const response = await fetch(url, { method: 'DELETE', headers: this.getHeaders() });
+
+    if (!response.ok) {
+      const error = await response.json() as any;
+      throw new Error(error.error || 'Failed to unexpose HTTP');
     }
   }
 
@@ -323,7 +461,7 @@ export class SandboxClient {
   async getStatus() {
     const url = `${this.baseUrl}/sandbox/${this.id}`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, { headers: this.getHeaders() });
 
     if (!response.ok) {
       const error = await response.json() as any;
@@ -344,7 +482,7 @@ export class SandboxClient {
 
     const url = `${this.baseUrl}/sandbox/${this.id}?${params}`;
 
-    const response = await fetch(url, { method: 'DELETE' });
+    const response = await fetch(url, { method: 'DELETE', headers: this.getHeaders() });
 
     if (!response.ok) {
       const error = await response.json() as any;

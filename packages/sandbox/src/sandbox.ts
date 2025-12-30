@@ -54,7 +54,7 @@ export class Sandbox extends EventEmitter {
     super();
     this.id = config.id || uuidv4();
     this.workDir = config.workDir || path.join(process.cwd(), '.sandboxes', this.id);
-    this.config = config;
+    this.config = { ...config, env: config.env || {} };
     this.createdAt = Date.now();
   }
 
@@ -295,6 +295,70 @@ export class Sandbox extends EventEmitter {
       totalProcesses: this.processes.size,
       destroyed: this.destroyed,
     };
+  }
+
+  // ============================================================================
+  // Environment Variable Management
+  // ============================================================================
+
+  /**
+   * Set a single environment variable
+   */
+  setEnv(key: string, value: string): void {
+    if (this.destroyed) {
+      throw new Error('Sandbox has been destroyed');
+    }
+    this.config.env![key] = value;
+    this.emit('env_changed', { key, value, action: 'set' });
+  }
+
+  /**
+   * Set multiple environment variables at once
+   */
+  setEnvBatch(variables: Record<string, string>): void {
+    if (this.destroyed) {
+      throw new Error('Sandbox has been destroyed');
+    }
+    for (const [key, value] of Object.entries(variables)) {
+      this.config.env![key] = value;
+    }
+    this.emit('env_changed', { variables, action: 'batch_set' });
+  }
+
+  /**
+   * Get environment variable(s)
+   * If key is provided, returns the value for that key
+   * Otherwise returns all environment variables
+   */
+  getEnv(): Record<string, string>;
+  getEnv(key: string): string | undefined;
+  getEnv(key?: string): Record<string, string> | string | undefined {
+    if (key !== undefined) {
+      return this.config.env![key];
+    }
+    return { ...this.config.env };
+  }
+
+  /**
+   * Get list of environment variable names (for security, not exposing values)
+   */
+  getEnvKeys(): string[] {
+    return Object.keys(this.config.env!);
+  }
+
+  /**
+   * Unset (remove) an environment variable
+   */
+  unsetEnv(key: string): boolean {
+    if (this.destroyed) {
+      throw new Error('Sandbox has been destroyed');
+    }
+    if (key in this.config.env!) {
+      delete this.config.env![key];
+      this.emit('env_changed', { key, action: 'unset' });
+      return true;
+    }
+    return false;
   }
 
   /**

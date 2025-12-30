@@ -5,6 +5,8 @@ import { FileService } from './file-service';
 import { StreamService } from './stream-service';
 import { stream } from 'hono/streaming';
 import { Readable } from 'stream';
+import { createAuthMiddleware, parseApiKeysFromEnv } from './auth-middleware';
+import { HttpExposureService } from './http-exposure-service';
 
 export interface ServerConfig {
   port?: number;
@@ -12,6 +14,20 @@ export interface ServerConfig {
   basePath?: string;
   maxSandboxes?: number;
   cors?: boolean;
+  /**
+   * API keys for authentication. If empty or not provided, authentication is disabled.
+   * Can also be set via SANDBOX_API_KEYS environment variable (comma-separated).
+   */
+  apiKeys?: string[];
+  /**
+   * HTTP exposure configuration for Caddy integration
+   */
+  httpExposure?: {
+    caddyAdminUrl?: string;
+    baseDomain?: string;
+    protocol?: 'http' | 'https';
+    upstreamHost?: string;
+  };
 }
 
 /**
@@ -23,6 +39,7 @@ export function createServer(config: ServerConfig = {}) {
     basePath: config.basePath,
     maxSandboxes: config.maxSandboxes,
   });
+  const httpExposure = new HttpExposureService(config.httpExposure || {});
 
   // CORS middleware if enabled
   if (config.cors) {
@@ -30,8 +47,17 @@ export function createServer(config: ServerConfig = {}) {
       await next();
       c.header('Access-Control-Allow-Origin', '*');
       c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      c.header('Access-Control-Allow-Headers', 'Content-Type');
+      c.header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
     });
+  }
+
+  // API key authentication middleware
+  const apiKeys = config.apiKeys || parseApiKeysFromEnv();
+  if (apiKeys.length > 0) {
+    app.use('*', createAuthMiddleware({
+      apiKeys,
+      excludePaths: ['/'], // Health check doesn't require auth
+    }));
   }
 
   // Health check
@@ -430,6 +456,157 @@ export function createServer(config: ServerConfig = {}) {
     }
   });
 
+  // ============================================================================
+  // Environment Variable Endpoints
+  // ============================================================================
+
+  /**
+   * Set environment variables
+   * POST /sandbox/:id/env
+   * Body: { variables: { KEY: "value", ... } }
+   */
+  app.post('/sandbox/:id/env', async (c) => {
+    try {
+      const id = c.req.param('id');
+      const sandbox = manager.getSandbox(id);
+
+      if (!sandbox) {
+        return c.json({ error: 'Sandbox not found' }, 404);
+      }
+
+      const body = await c.req.json();
+      const { variables } = body;
+
+      if (!variables || typeof variables !== 'object') {
+        return c.json({ error: 'Variables object is required' }, 400);
+      }
+
+      sandbox.setEnvBatch(variables);
+
+      return c.json({
+        success: true,
+        count: Object.keys(variables).length,
+      });
+    } catch (error: any) {
+      return c.json({ error: error.message }, 500);
+    }
+  });
+
+  /**
+   * Get environment variable names (not values for security)
+   * GET /sandbox/:id/env
+   */
+  app.get('/sandbox/:id/env', (c) => {
+    const id = c.req.param('id');
+    const sandbox = manager.getSandbox(id);
+
+    if (!sandbox) {
+      return c.json({ error: 'Sandbox not found' }, 404);
+    }
+
+    const keys = sandbox.getEnvKeys();
+    return c.json({ variables: keys, count: keys.length });
+  });
+
+  /**
+   * Unset an environment variable
+   * DELETE /sandbox/:id/env/:key
+   */
+  app.delete('/sandbox/:id/env/:key', (c) => {
+    try {
+      const id = c.req.param('id');
+      const key = c.req.param('key');
+      const sandbox = manager.getSandbox(id);
+
+      if (!sandbox) {
+        return c.json({ error: 'Sandbox not found' }, 404);
+      }
+
+      const removed = sandbox.unsetEnv(key);
+
+      if (!removed) {
+        return c.json({ error: 'Environment variable not found' }, 404);
+      }
+
+      return c.json({ success: true, key });
+    } catch (error: any) {
+      return c.json({ error: error.message }, 500);
+    }
+  });
+
+  // ============================================================================
+  // HTTP Exposure Endpoints
+  // ============================================================================
+
+  /**
+   * Expose a sandbox port via HTTP
+   * POST /sandbox/:id/expose
+   * Body: { port: 3000 }
+   */
+  app.post('/sandbox/:id/expose', async (c) => {
+    try {
+      const id = c.req.param('id');
+      const sandbox = manager.getSandbox(id);
+
+      if (!sandbox) {
+        return c.json({ error: 'Sandbox not found' }, 404);
+      }
+
+      const body = await c.req.json();
+      const { port } = body;
+
+      if (!port || typeof port !== 'number') {
+        return c.json({ error: 'Port number is required' }, 400);
+      }
+
+      const url = await httpExposure.expose(id, port);
+
+      return c.json({ url, port, sandboxId: id });
+    } catch (error: any) {
+      return c.json({ error: error.message }, 500);
+    }
+  });
+
+  /**
+   * Get all exposed endpoints for a sandbox
+   * GET /sandbox/:id/expose
+   */
+  app.get('/sandbox/:id/expose', (c) => {
+    const id = c.req.param('id');
+    const sandbox = manager.getSandbox(id);
+
+    if (!sandbox) {
+      return c.json({ error: 'Sandbox not found' }, 404);
+    }
+
+    const exposures = httpExposure.getExposures(id);
+    return c.json({ exposures });
+  });
+
+  /**
+   * Remove HTTP exposure for a sandbox port
+   * DELETE /sandbox/:id/expose?port=3000
+   */
+  app.delete('/sandbox/:id/expose', async (c) => {
+    try {
+      const id = c.req.param('id');
+      const sandbox = manager.getSandbox(id);
+
+      if (!sandbox) {
+        return c.json({ error: 'Sandbox not found' }, 404);
+      }
+
+      const portStr = c.req.query('port');
+      const port = portStr ? parseInt(portStr) : undefined;
+
+      await httpExposure.unexpose(id, port);
+
+      return c.json({ success: true });
+    } catch (error: any) {
+      return c.json({ error: error.message }, 500);
+    }
+  });
+
   // Cleanup on process exit
   process.on('SIGINT', async () => {
     console.log('\nShutting down...');
@@ -447,7 +624,7 @@ export function createServer(config: ServerConfig = {}) {
     process.exit(0);
   });
 
-  return { app, manager };
+  return { app, manager, httpExposure };
 }
 
 /**

@@ -45,24 +45,24 @@
 // Server API
 // ============================================================================
 
-export { startServer, createServer } from './api-server';
-export type { ServerConfig } from './api-server';
+export { startServer, createServer } from './api-server.js';
+export type { ServerConfig } from './api-server.js';
 
 // ============================================================================
 // Client SDK
 // ============================================================================
 
-export { SandboxClient, parseSSEStream } from './client';
-export type { SandboxClientConfig, CreateSandboxResponse } from './client';
+export { SandboxClient, parseSSEStream } from './client.js';
+export type { SandboxClientConfig, CreateSandboxResponse } from './client.js';
 
 // ============================================================================
 // Core Components
 // ============================================================================
 
-export { Sandbox } from './sandbox';
-export { SandboxManager } from './sandbox-manager';
-export { FileService } from './file-service';
-export { StreamService } from './stream-service';
+export { Sandbox } from './sandbox.js';
+export { SandboxManager } from './sandbox-manager.js';
+export { FileService } from './file-service.js';
+export { StreamService } from './stream-service.js';
 
 // ============================================================================
 // Type Exports
@@ -73,29 +73,29 @@ export type {
   ProcessInfo,
   ExecOptions,
   ExecuteResponse,
-} from './sandbox';
+} from './sandbox.js';
 
-export type { SandboxManagerConfig } from './sandbox-manager';
+export type { SandboxManagerConfig } from './sandbox-manager.js';
 
 export type {
   FileInfo,
   ListFilesOptions,
   ReadFileOptions,
   WriteFileOptions,
-} from './file-service';
+} from './file-service.js';
 
-export type { ExecEvent, ExecEventType, LogEvent } from './stream-service';
+export type { ExecEvent, ExecEventType, LogEvent } from './stream-service.js';
 
 // ============================================================================
 // Auth & Middleware
 // ============================================================================
 
-export { createAuthMiddleware, parseApiKeysFromEnv } from './auth-middleware';
-export type { AuthConfig } from './auth-middleware';
+export { createAuthMiddleware, parseApiKeysFromEnv } from './auth-middleware.js';
+export type { AuthConfig } from './auth-middleware.js';
 
 // ============================================================================
 // HTTP Exposure
 // ============================================================================
 
-export { HttpExposureService } from './http-exposure-service';
-export type { HttpExposureConfig, ExposedEndpoint } from './http-exposure-service';
+export { HttpExposureService } from './http-exposure-service.js';
+export type { HttpExposureConfig, ExposedEndpoint } from './http-exposure-service.js';

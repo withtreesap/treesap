@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { startServer } from './api-server';
+import { startServer } from './api-server.js';
 
 /**
  * CLI entry point for TreeSap Sandbox

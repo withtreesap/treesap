@@ -1,4 +1,4 @@
-import { Sandbox, ExecOptions } from './sandbox';
+import { Sandbox, ExecOptions } from './sandbox.js';
 import { Readable } from 'stream';
 
 export type ExecEventType = 'start' | 'stdout' | 'stderr' | 'complete' | 'error';

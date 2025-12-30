@@ -1,6 +1,6 @@
-import { ExecuteResponse, ProcessInfo, ExecOptions } from './sandbox';
-import { FileInfo, ListFilesOptions } from './file-service';
-import { ExecEvent, LogEvent } from './stream-service';
+import { ExecuteResponse, ProcessInfo, ExecOptions } from './sandbox.js';
+import { FileInfo, ListFilesOptions } from './file-service.js';
+import { ExecEvent, LogEvent } from './stream-service.js';
 
 export interface SandboxClientConfig {
   baseUrl: string;

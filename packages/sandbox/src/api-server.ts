@@ -1,12 +1,12 @@
 import { Hono } from 'hono';
 import { serve } from '@hono/node-server';
-import { SandboxManager } from './sandbox-manager';
-import { FileService } from './file-service';
-import { StreamService } from './stream-service';
+import { SandboxManager } from './sandbox-manager.js';
+import { FileService } from './file-service.js';
+import { StreamService } from './stream-service.js';
 import { stream } from 'hono/streaming';
 import { Readable } from 'stream';
-import { createAuthMiddleware, parseApiKeysFromEnv } from './auth-middleware';
-import { HttpExposureService } from './http-exposure-service';
+import { createAuthMiddleware, parseApiKeysFromEnv } from './auth-middleware.js';
+import { HttpExposureService } from './http-exposure-service.js';
 
 export interface ServerConfig {
   port?: number;

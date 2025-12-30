@@ -86,9 +86,7 @@ export class Sandbox extends EventEmitter {
       let timedOut = false;
 
       // Parse command and args
-      const [cmd, ...args] = this.parseCommand(command);
-
-      const childProcess = spawn(cmd, args, {
+      const childProcess = spawn(command, [], {
         cwd: options.cwd || this.workDir,
         env: { ...process.env, ...this.config.env, ...options.env },
         shell: true,
@@ -185,13 +183,11 @@ export class Sandbox extends EventEmitter {
     }
 
     const processId = uuidv4();
-    const [cmd, ...args] = this.parseCommand(command);
-
-    const childProcess = spawn(cmd, args, {
-      cwd: options.cwd || this.workDir,
-      env: { ...process.env, ...this.config.env, ...options.env },
-      shell: true,
-    });
+      const childProcess = spawn(command, [], {
+        cwd: options.cwd || this.workDir,
+        env: { ...process.env, ...this.config.env, ...options.env },
+        shell: true,
+      });
 
     const processInfo: ProcessInfo = {
       id: processId,
@@ -386,11 +382,5 @@ export class Sandbox extends EventEmitter {
     this.removeAllListeners();
   }
 
-  /**
-   * Parse a command string into command and arguments
-   */
-  private parseCommand(command: string): string[] {
-    // Simple parsing - for more complex commands, shell: true handles it
-    return command.split(' ').filter(Boolean);
-  }
+
 }

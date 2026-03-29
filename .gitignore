@@ -7,5 +7,10 @@
 
 .DS_Store
 
+node_modules/
+.vite/
+.env
+.env.*
 
 dist/
+examples/

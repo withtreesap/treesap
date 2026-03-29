@@ -2,7 +2,7 @@
   "compilerOptions": {
     "strict": false,
     "verbatimModuleSyntax": false,
-    "noEmit": true,
+    "noEmit": false,
     "skipLibCheck": true,
     "target": "ES2022",
     "module": "ESNext",
@@ -16,10 +16,22 @@
     "types": [
       "node"
     ],
+    "baseUrl": ".",
+    "paths": {
+      "treesap": [
+        "./packages/treesap/src/index.ts"
+      ],
+      "treesap/*": [
+        "./packages/treesap/src/*"
+      ]
+    },
+    "outDir": "dist",
+    "rootDir": ".",
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "declaration": false,
     "sourceMap": true
   },
   "exclude": [
@@ -27,6 +39,7 @@
     "dist"
   ],
   "include": [
-    "src/**/*"
+    "packages/**/*",
+    "examples/site/src/**/*"
   ]
 }

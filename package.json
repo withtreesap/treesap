@@ -1,0 +1,27 @@
+{
+  "name": "@treesap/monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "examples/site"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @treesap/example-site",
+    "build": "npm run build --workspace @treesap/example-site",
+    "preview": "npm run preview --workspace @treesap/example-site",
+    "start": "npm run start --workspace @treesap/example-site",
+    "clean": "npm run clean --workspace @treesap/example-site",
+    "test": "vitest run",
+    "test:framework": "vitest run",
+    "dev:site": "npm run dev --workspace @treesap/example-site",
+    "build:site": "npm run build --workspace @treesap/example-site",
+    "preview:site": "npm run preview --workspace @treesap/example-site",
+    "start:site": "npm run start --workspace @treesap/example-site"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "vite": "^8.0.3",
+    "vitest": "^4.1.2"
+  }
+}

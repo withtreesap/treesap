@@ -1,60 +1,53 @@
 {
   "name": "treesap",
-  "version": "0.1.13",
-  "description": "AI Agent Framework",
+  "version": "0.2.0",
+  "description": "Opinionated Vite-first Node SSR framework.",
   "type": "module",
-  "main": "dist/index.js",
-  "bin": {
-    "treesap": "dist/cli.js"
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    }
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
-    "dev": "tsx --watch src/index.tsx",
-    "dev:css": "tailwindcss -i ./src/styles/input.css -o ./src/static/styles/main.css --watch",
-    "dev:example": "cd examples/basic-hono && npm run dev:src",
-    "dev:vite": "cd examples/basics-sapling && npm run dev:src",
-    "build": "npm run build:css && npm run build:ts && npm run copy:static",
-    "build:css": "tailwindcss -i ./src/styles/input.css -o ./src/static/styles/main.css",
-    "build:ts": "tsc",
-    "copy:static": "cp -r src/static dist/",
-    "start": "node dist/server.js",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run build"
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run -c vitest.config.ts",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
-    "chat",
-    "realtime",
-    "islands",
+    "vite",
     "ssr",
-    "hono",
-    "sapling",
-    "cli"
+    "node",
+    "framework",
+    "hono"
   ],
-  "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "@hono/node-server": "^1.13.1",
-    "@tailwindcss/typography": "^0.5.16",
-    "commander": "^12.1.0",
-    "dotenv": "^16.4.7",
-    "hono": "^4.9.1",
-    "node-pty": "^1.1.0-beta34",
-    "uuid": "^11.1.0",
-    "ws": "^8.18.3"
+    "hono": "^4.10.3"
+  },
+  "peerDependencies": {
+    "vite": "^8.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.15.15",
-    "@types/uuid": "^10.0.0",
-    "@types/ws": "^8.18.1",
-    "tailwindcss": "^3.4.17",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.3"
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.2",
+    "vite": "^8.0.3",
+    "vitest": "^4.1.2"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
-  "workspaces": [
-    "examples/*"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/withtreesap/treesap.git"

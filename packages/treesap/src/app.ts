@@ -18,7 +18,7 @@ function isProductionRuntime() {
     env?: { PROD?: boolean };
   }).env;
 
-  return viteEnv?.PROD === true;
+  return viteEnv?.PROD === true || process.env.NODE_ENV === "production";
 }
 
 function resolveDefaultPublicRoot(rootDir: string) {

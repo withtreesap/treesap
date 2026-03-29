@@ -40,7 +40,7 @@ function resolveRuntimeMode() {
     env?: { PROD?: boolean };
   }).env;
 
-  if (viteEnv?.PROD === true) {
+  if (viteEnv?.PROD === true || process.env.NODE_ENV === "production") {
     return "production";
   }
 

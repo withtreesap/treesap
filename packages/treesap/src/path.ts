@@ -7,7 +7,7 @@ export interface CompiledPath {
   test(pathname: string): PathMatchResult | null;
 }
 
-function normalizePattern(pattern: string) {
+export function normalizePattern(pattern: string) {
   if (!pattern || pattern === "*") {
     return "/*";
   }
@@ -19,12 +19,18 @@ function normalizePattern(pattern: string) {
   return pattern;
 }
 
-function normalizePathname(pathname: string) {
+export function normalizePathname(pathname: string) {
   if (!pathname || pathname === "/") {
     return "/";
   }
 
   return pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+}
+
+export function isExactPathPattern(pattern: string) {
+  const normalizedPattern = normalizePattern(pattern);
+
+  return !normalizedPattern.includes("*") && !normalizedPattern.includes(":");
 }
 
 export function compilePath(pattern: string): CompiledPath {

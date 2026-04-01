@@ -2,7 +2,13 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { Context } from "./context.ts";
 import { serveStatic } from "./middleware/serve-static.ts";
-import { compilePath, joinPaths, type CompiledPath } from "./path.ts";
+import {
+  compilePath,
+  isExactPathPattern,
+  joinPaths,
+  normalizePathname,
+  type CompiledPath,
+} from "./path.ts";
 
 export type Next = () => Promise<Response>;
 export type HandlerResult = Response | void | Promise<Response | void>;
@@ -51,6 +57,21 @@ interface RouteRecord {
   methods: string[];
   matcher: CompiledPath;
   handlers: Handler[];
+}
+
+interface RouteMatch {
+  record: RouteRecord;
+  params: Record<string, string>;
+}
+
+function appendRouteRecord(
+  index: Map<string, RouteRecord[]>,
+  key: string,
+  record: RouteRecord
+) {
+  const records = index.get(key) ?? [];
+  records.push(record);
+  index.set(key, records);
 }
 
 function applyResponseDefaults(response: Response) {
@@ -115,6 +136,8 @@ export class ServerApp {
   private readonly frameworkMiddlewares: MiddlewareRecord[] = [];
   private readonly middlewares: MiddlewareRecord[] = [];
   private readonly routes: RouteRecord[] = [];
+  private readonly methodRoutes = new Map<string, RouteRecord[]>();
+  private readonly exactRoutes = new Map<string, Map<string, RouteRecord[]>>();
   private notFoundHandler: Handler = (ctx) =>
     ctx.text("Not Found", { status: 404 });
 
@@ -158,13 +181,30 @@ export class ServerApp {
     return this;
   }
 
+  private registerRoute(record: RouteRecord) {
+    this.routes.push(record);
+
+    for (const method of record.methods) {
+      appendRouteRecord(this.methodRoutes, method, record);
+
+      if (isExactPathPattern(record.matcher.pattern)) {
+        const exactRoutesForMethod = this.exactRoutes.get(method) ?? new Map();
+        appendRouteRecord(exactRoutesForMethod, record.matcher.pattern, record);
+        this.exactRoutes.set(method, exactRoutesForMethod);
+      }
+    }
+  }
+
   on(methods: string[] | readonly string[], path: string, ...handlers: Handler[]) {
-    this.routes.push({
+    const matcher = compilePath(path);
+    const record = {
       path,
       methods: [...methods].map((method) => method.toUpperCase()),
-      matcher: compilePath(path),
+      matcher,
       handlers,
-    });
+    };
+
+    this.registerRoute(record);
 
     return this;
   }
@@ -195,7 +235,7 @@ export class ServerApp {
     });
 
     child.routes.forEach((record) => {
-      this.routes.push({
+      this.registerRoute({
         path: joinPaths(prefix, record.path),
         methods: [...record.methods],
         matcher: compilePath(joinPaths(prefix, record.path)),
@@ -215,6 +255,42 @@ export class ServerApp {
     return this;
   }
 
+  private findRoute(method: string, pathname: string): RouteMatch | null {
+    const normalizedPathname = normalizePathname(pathname);
+    const exactRouteCandidates = [
+      ...(this.exactRoutes.get(method)?.get(normalizedPathname) ?? []),
+      ...(this.exactRoutes.get("ALL")?.get(normalizedPathname) ?? []),
+    ];
+
+    for (const record of exactRouteCandidates) {
+      return {
+        record,
+        params: {},
+      };
+    }
+
+    const routeCandidates = [
+      ...(this.methodRoutes.get(method) ?? []),
+      ...(this.methodRoutes.get("ALL") ?? []),
+    ];
+
+    for (const record of routeCandidates) {
+      if (isExactPathPattern(record.matcher.pattern)) {
+        continue;
+      }
+
+      const match = record.matcher.test(normalizedPathname);
+      if (match) {
+        return {
+          record,
+          params: match.params,
+        };
+      }
+    }
+
+    return null;
+  }
+
   async fetch(request: Request | string | URL, init?: RequestInit) {
     const normalizedRequest =
       request instanceof Request ? request : new Request(request, init);
@@ -230,15 +306,9 @@ export class ServerApp {
       )
       .map((record) => record.handler);
 
-    const route = this.routes.find((record) => {
-      if (!record.methods.includes(method) && !record.methods.includes("ALL")) {
-        return false;
-      }
-
-      return Boolean(record.matcher.test(url.pathname));
-    });
-
-    const params = route?.matcher.test(url.pathname)?.params ?? {};
+    const routeMatch = this.findRoute(method, url.pathname);
+    const route = routeMatch?.record;
+    const params = routeMatch?.params ?? {};
     const ctx = new Context(normalizedRequest, params);
     const notFound: Next = async () => {
       const response = await this.notFoundHandler(

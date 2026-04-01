@@ -1,6 +1,6 @@
 {
   "name": "treesap",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Opinionated Vite-first Node SSR framework.",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,6 +22,7 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
     "test": "vitest run -c vitest.config.ts",
     "prepublishOnly": "npm run build && npm test"
   },

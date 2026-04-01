@@ -38,6 +38,48 @@ test("mounted routers preserve named params", async () => {
   expect(await response.text()).toBe("alice");
 });
 
+test("exact routes win over matching param routes", async () => {
+  const app = createApp();
+
+  app.get("/:page", (ctx) => ctx.text(`dynamic:${String(ctx.req.param("page"))}`));
+  app.get("/about", (ctx) => ctx.text("exact:about"));
+
+  const response = await app.fetch("http://treesap.test/about");
+
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe("exact:about");
+});
+
+test("same path can resolve different handlers by method", async () => {
+  const app = createApp();
+
+  app.get("/session", (ctx) => ctx.text("get:session"));
+  app.post("/session", (ctx) => ctx.text("post:session"));
+
+  const getResponse = await app.fetch("http://treesap.test/session");
+  const postResponse = await app.fetch("http://treesap.test/session", {
+    method: "POST",
+  });
+
+  expect(getResponse.status).toBe(200);
+  expect(await getResponse.text()).toBe("get:session");
+  expect(postResponse.status).toBe(200);
+  expect(await postResponse.text()).toBe("post:session");
+});
+
+test("mounted exact routes are indexed and still resolve", async () => {
+  const app = createApp();
+  const blog = createRouter();
+
+  blog.get("/about", (ctx) => ctx.text("blog:about"));
+  app.route("/blog", blog);
+
+  const response = await app.fetch("http://treesap.test/blog/about");
+
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe("blog:about");
+});
+
 test("middleware ordering wraps route handlers predictably", async () => {
   const app = createApp();
   const order: string[] = [];

@@ -8,6 +8,7 @@ This package provides:
 - router and middleware primitives
 - static file serving with sensible cache defaults
 - a `treesap/vite` entry for Vite dev and production builds
+- explicit islands support built on `sapling-island`
 
 ## Install
 
@@ -23,6 +24,12 @@ import { defineTreesapConfig } from "treesap/vite";
 
 export default defineTreesapConfig({
   appEntry: "src/server/app.tsx",
+  browserEntry: "src/treesap-client.ts",
+  islands: {
+    entries: {
+      counter: "src/islands/counter.ts",
+    },
+  },
   plugins: [react()],
 });
 ```
@@ -50,7 +57,96 @@ Build with `vite build`, then run the server bundle with:
 node dist/server/main.js
 ```
 
+If your browser entry lives somewhere else, set `browserEntry` explicitly rather than relying on a fixed file location.
+
+## Layout Assets
+
+Render your browser assets from server layouts with `getViteBrowserAssets()`:
+
+```tsx
+import { getViteBrowserAssets } from "treesap/vite";
+
+export default function BaseLayout(props: { children: string | object }) {
+  const browserAssets = getViteBrowserAssets({
+    devStyles: ["/src/styles/main.css"],
+  });
+
+  return (
+    <html>
+      <head>
+        {browserAssets.styles.map((href) => (
+          <link rel="stylesheet" href={href} />
+        ))}
+        {browserAssets.scripts.map((src) => (
+          <script type="module" src={src}></script>
+        ))}
+      </head>
+      <body>{props.children}</body>
+    </html>
+  );
+}
+```
+
+Use `devStyles` when you want an eager stylesheet `<link>` during development to avoid a flash of unstyled content before the browser entry module loads.
+
+## Islands
+
+Register island client entries explicitly in `defineTreesapConfig()`:
+
+```ts
+import { defineTreesapConfig } from "treesap/vite";
+
+export default defineTreesapConfig({
+  appEntry: "src/server/app.tsx",
+  browserEntry: "src/treesap-client.ts",
+  islands: {
+    entries: {
+      counter: "src/islands/counter.ts",
+    },
+  },
+});
+```
+
+Then render them from server JSX with `Island`:
+
+```tsx
+/** @jsxImportSource hono/jsx */
+import { Island } from "treesap";
+
+export function CounterSection() {
+  return (
+    <Island name="counter" loading="visible">
+      <div>
+        <button type="button" data-island-increment="">
+          Increment
+        </button>
+        <span data-island-count="">0</span>
+      </div>
+    </Island>
+  );
+}
+```
+
+Island client modules should export a default mount function:
+
+```ts
+export default function mount(root: HTMLElement) {
+  const button = root.querySelector("[data-island-increment]");
+  const output = root.querySelector("[data-island-count]");
+  let count = 0;
+
+  button?.addEventListener("click", () => {
+    count += 1;
+    if (output) {
+      output.textContent = String(count);
+    }
+  });
+}
+```
+
+Recommended convention: keep island entries in `src/islands/`, but registration is explicit and no filesystem discovery is required.
+
 ## Exports
 
-- `treesap`: `createApp`, `createRouter`, `serve`, `Context`, `cors`, `serveStatic`
-- `treesap/vite`: `defineTreesapConfig`, `getViteEntryAssets`, `treesap`
+- `treesap`: `createApp`, `createRouter`, `serve`, `Context`, `cors`, `serveStatic`, `Island`
+- `treesap/vite`: `defineTreesapConfig`, `getViteBrowserAssets`, `getViteEntryAssets`, `getViteModuleAsset`, `treesap`

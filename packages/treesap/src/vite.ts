@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   build,
   defineConfig,
@@ -18,9 +19,23 @@ interface ManifestEntry {
   css?: string[];
 }
 
+export interface TreesapIslandsOptions {
+  entries: Record<string, string>;
+}
+
+interface NormalizedTreesapIslandEntry {
+  name: string;
+  entry: string;
+  absolutePath: string;
+}
+
 export interface TreesapVitePluginOptions {
   appEntry: string;
   appFactoryExport?: string;
+  appEntryPath?: string;
+  browserEntry?: string;
+  islands?: NormalizedTreesapIslandEntry[];
+  islandRuntimeEntry?: string;
   spaBase?: string;
   spaIndexHtml?: string;
   spaEntryModule?: string;
@@ -31,6 +46,7 @@ export interface DefineTreesapConfigOptions {
   appFactoryExport?: string;
   serverEntry?: string;
   browserEntry?: string;
+  islands?: TreesapIslandsOptions;
   plugins?: PluginOption[];
   vite?: UserConfig;
 }
@@ -71,6 +87,18 @@ function normalizeManifestLookupPath(entry: string) {
     .replace(/^\/+/, "")
     .replace(/^(\.\.\/)+/, "")
     .replace(/^\.\//, "");
+}
+
+function stripQuery(id: string) {
+  return id.replace(/\?.*$/, "");
+}
+
+function createDevEntryScriptPath(entry: string) {
+  if (path.isAbsolute(entry)) {
+    return `/@fs/${entry.replaceAll("\\", "/").replace(/^\/+/, "")}`;
+  }
+
+  return `/${normalizeManifestLookupPath(entry)}`;
 }
 
 function normalizeSpaBase(base: string) {
@@ -163,6 +191,107 @@ function resolveConfigRoot(viteConfig?: UserConfig) {
   return path.resolve(viteConfig?.root ?? process.cwd());
 }
 
+function resolveBrowserEntry(options: DefineTreesapConfigOptions) {
+  const root = resolveConfigRoot(options.vite);
+  const browserEntry = options.browserEntry ?? "src/treesap-client.ts";
+  const absolutePath = path.resolve(root, browserEntry);
+
+  if (!existsSync(absolutePath)) {
+    if (options.browserEntry) {
+      throw new Error(
+        `Treesap could not find browserEntry "${options.browserEntry}". Check the path or update defineTreesapConfig({ browserEntry }).`
+      );
+    }
+
+    throw new Error(
+      'Treesap could not find the default browser entry "src/treesap-client.ts". Set browserEntry in defineTreesapConfig(...) if your client entry lives elsewhere.'
+    );
+  }
+
+  return {
+    entry: normalizeManifestLookupPath(browserEntry),
+    absolutePath,
+  };
+}
+
+function resolveAppEntry(options: DefineTreesapConfigOptions) {
+  const root = resolveConfigRoot(options.vite);
+
+  return path.resolve(root, options.appEntry);
+}
+
+function resolveIslandEntries(
+  options: DefineTreesapConfigOptions
+): NormalizedTreesapIslandEntry[] {
+  const root = resolveConfigRoot(options.vite);
+  const rawEntries = options.islands?.entries ?? {};
+
+  return Object.entries(rawEntries).map(([name, entry]) => {
+    const normalizedName = name.trim();
+    const normalizedEntry = entry.trim();
+
+    if (!normalizedName) {
+      throw new Error("Treesap islands entries must have a non-empty name.");
+    }
+
+    if (!normalizedEntry) {
+      throw new Error(
+        `Treesap island "${normalizedName}" must point to a non-empty entry path.`
+      );
+    }
+
+    return {
+      name: normalizedName,
+      entry: normalizeManifestLookupPath(normalizedEntry),
+      absolutePath: path.resolve(root, normalizedEntry),
+    };
+  });
+}
+
+function resolveIslandRuntimeEntry() {
+  const runtimeDir = path.dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    path.resolve(runtimeDir, "island-runtime.js"),
+    path.resolve(runtimeDir, "island-runtime.ts"),
+  ];
+
+  const resolved = candidates.find((candidate) => existsSync(candidate));
+  if (!resolved) {
+    throw new Error("Treesap could not resolve its island runtime module.");
+  }
+
+  return resolved;
+}
+
+function createClientBuildInputs(options: DefineTreesapConfigOptions) {
+  const browserEntry = resolveBrowserEntry(options);
+  const islandEntries = resolveIslandEntries(options);
+
+  const input: Record<string, string> = {
+    browser: browserEntry.absolutePath,
+  };
+
+  islandEntries.forEach((island) => {
+    input[`island-${island.name}`] = island.absolutePath;
+  });
+
+  if (islandEntries.length > 0) {
+    input["treesap-island-runtime"] = resolveIslandRuntimeEntry();
+  }
+
+  return input;
+}
+
+function createTreesapDefineConfig(options: DefineTreesapConfigOptions) {
+  const islandEntries = Object.fromEntries(
+    resolveIslandEntries(options).map((entry) => [entry.name, entry.entry])
+  );
+
+  return {
+    "globalThis.__TREESAP_ISLANDS__": JSON.stringify(islandEntries),
+  };
+}
+
 function createTreesapSharedConfig(options: DefineTreesapConfigOptions): UserConfig {
   const root = resolveConfigRoot(options.vite);
 
@@ -170,6 +299,7 @@ function createTreesapSharedConfig(options: DefineTreesapConfigOptions): UserCon
     {
       appType: "custom",
       root,
+      define: createTreesapDefineConfig(options),
       ssr: {
         noExternal: ["hono"],
       },
@@ -182,12 +312,18 @@ function createTreesapSharedConfig(options: DefineTreesapConfigOptions): UserCon
 }
 
 function createTreesapDevConfig(options: DefineTreesapConfigOptions): UserConfig {
+  const browserEntry = resolveBrowserEntry(options);
+
   return mergeConfig(createTreesapSharedConfig(options), {
     base: "/",
     plugins: [
       treesap({
         appEntry: options.appEntry,
         appFactoryExport: options.appFactoryExport,
+        appEntryPath: resolveAppEntry(options),
+        browserEntry: browserEntry.entry,
+        islands: resolveIslandEntries(options),
+        islandRuntimeEntry: resolveIslandRuntimeEntry(),
       }),
       ...(options.plugins ?? []),
     ],
@@ -198,20 +334,28 @@ function createTreesapClientBuildConfig(
   options: DefineTreesapConfigOptions
 ): UserConfig {
   const root = resolveConfigRoot(options.vite);
-  const browserEntry = options.browserEntry ?? "src/www/entry-style.ts";
+  const browserEntry = resolveBrowserEntry(options);
 
   return mergeConfig(createTreesapSharedConfig(options), {
     base: "/",
     publicDir: path.resolve(root, "public"),
-    plugins: [...(options.plugins ?? [])],
+    plugins: [
+      treesap({
+        appEntry: options.appEntry,
+        appFactoryExport: options.appFactoryExport,
+        appEntryPath: resolveAppEntry(options),
+        browserEntry: browserEntry.entry,
+        islands: resolveIslandEntries(options),
+        islandRuntimeEntry: resolveIslandRuntimeEntry(),
+      }),
+      ...(options.plugins ?? []),
+    ],
     build: {
       manifest: true,
       outDir: "dist/client",
       emptyOutDir: true,
       rolldownOptions: {
-        input: {
-          browser: path.resolve(root, browserEntry),
-        },
+        input: createClientBuildInputs(options),
       },
     },
   });
@@ -220,10 +364,22 @@ function createTreesapClientBuildConfig(
 function createTreesapServerBuildConfig(
   options: DefineTreesapConfigOptions
 ): UserConfig {
+  const browserEntry = resolveBrowserEntry(options);
+
   return mergeConfig(createTreesapSharedConfig(options), {
     base: "/",
     publicDir: false,
-    plugins: [...(options.plugins ?? [])],
+    plugins: [
+      treesap({
+        appEntry: options.appEntry,
+        appFactoryExport: options.appFactoryExport,
+        appEntryPath: resolveAppEntry(options),
+        browserEntry: browserEntry.entry,
+        islands: resolveIslandEntries(options),
+        islandRuntimeEntry: resolveIslandRuntimeEntry(),
+      }),
+      ...(options.plugins ?? []),
+    ],
     build: {
       ssr: options.serverEntry ?? "src/main.tsx",
       target: "node22",
@@ -259,9 +415,62 @@ export function treesap(options: TreesapVitePluginOptions): Plugin {
   const appFactoryExport = options.appFactoryExport ?? "createServerApp";
   const spaIndexHtml = options.spaIndexHtml ?? "src/app/index.html";
   const spaEntryModule = options.spaEntryModule ?? "/src/app/main.tsx";
+  const appEntryPath = options.appEntryPath ? path.resolve(options.appEntryPath) : null;
+  const islandEntries = options.islands ?? [];
+  const islandRuntimeEntry = options.islandRuntimeEntry
+    ? path.resolve(options.islandRuntimeEntry)
+    : null;
 
   return {
     name: "treesap",
+    transform(code, id) {
+      const hasBrowserEntry = Boolean(options.browserEntry);
+      const hasIslands = islandEntries.length > 0;
+
+      if (!hasBrowserEntry && !hasIslands) {
+        return null;
+      }
+
+      const moduleId = path.resolve(stripQuery(id));
+      const injectedGlobals = [
+        hasIslands
+          ? `globalThis.__TREESAP_ISLANDS__ = ${JSON.stringify(
+              Object.fromEntries(islandEntries.map((entry) => [entry.name, entry.entry]))
+            )};`
+          : null,
+        hasBrowserEntry
+          ? `globalThis.__TREESAP_BROWSER_ENTRY__ = ${JSON.stringify(
+              normalizeManifestLookupPath(options.browserEntry)
+            )};`
+          : null,
+        hasIslands && islandRuntimeEntry
+          ? `globalThis.__TREESAP_ISLAND_RUNTIME_ENTRY__ = ${JSON.stringify(
+              islandRuntimeEntry
+            )};`
+          : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      if (appEntryPath && moduleId === appEntryPath) {
+        const alreadyInjected =
+          (!hasIslands || code.includes("globalThis.__TREESAP_ISLANDS__")) &&
+          (!hasBrowserEntry || code.includes("globalThis.__TREESAP_BROWSER_ENTRY__")) &&
+          (!hasIslands ||
+            code.includes("globalThis.__TREESAP_ISLAND_RUNTIME_ENTRY__"));
+
+        if (alreadyInjected) {
+          return null;
+        }
+
+        return {
+          code: `${injectedGlobals}\n${code}`,
+          map: null,
+        };
+      }
+
+      return null;
+    },
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const rewrittenUrl = maybeRewriteSpaAssetRequest(req.url ?? "/", spaBase);
@@ -345,8 +554,15 @@ export function getViteEntryAssets(options: {
 }) {
   const mode = options.mode ?? resolveRuntimeMode();
   if (mode !== "production") {
+    const scripts = Array.from(
+      new Set([
+        ...(options.devScripts ?? []),
+        createDevEntryScriptPath(options.entry),
+      ])
+    );
+
     return {
-      scripts: options.devScripts ?? [],
+      scripts,
       styles: options.devStyles ?? [],
     };
   }
@@ -387,4 +603,49 @@ export function getViteEntryAssets(options: {
     scripts: entry?.file ? [normalizePublicPath(entry.file, base)] : [],
     styles: (entry?.css ?? []).map((href) => normalizePublicPath(href, base)),
   };
+}
+
+function getRegisteredBrowserEntry() {
+  return globalThis.__TREESAP_BROWSER_ENTRY__ ?? null;
+}
+
+export function getViteBrowserAssets(options?: {
+  mode?: string;
+  manifestPath?: string;
+  base?: string;
+  devStyles?: string[];
+}) {
+  const entry = getRegisteredBrowserEntry();
+  if (!entry) {
+    throw new Error(
+      "Treesap browser entry is not registered. Set browserEntry in defineTreesapConfig(...) or restart Vite."
+    );
+  }
+
+  return getViteEntryAssets({
+    entry,
+    mode: options?.mode,
+    manifestPath: options?.manifestPath,
+    base: options?.base,
+    devScripts: ["/@vite/client"],
+    devStyles: options?.devStyles ?? [],
+  });
+}
+
+export function getViteModuleAsset(options: {
+  entry: string;
+  mode?: string;
+  manifestPath?: string;
+  base?: string;
+}) {
+  return (
+    getViteEntryAssets({
+      entry: options.entry,
+      mode: options.mode,
+      manifestPath: options.manifestPath,
+      base: options.base,
+      devScripts: [createDevEntryScriptPath(options.entry)],
+      devStyles: [],
+    }).scripts[0] ?? null
+  );
 }

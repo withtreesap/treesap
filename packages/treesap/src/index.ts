@@ -9,5 +9,6 @@ export {
   ServerApp,
 } from "./app.ts";
 export { cors } from "./middleware/cors.ts";
+export { Island, type IslandProps } from "./island.tsx";
 export { serveStatic } from "./middleware/serve-static.ts";
 export { serve, sendNodeResponse, toWebRequest } from "./node.ts";

@@ -6,11 +6,13 @@
     "rootDir": "src",
     "declaration": true,
     "declarationMap": true,
+    "inlineSources": true,
     "rewriteRelativeImportExtensions": true
   },
   "exclude": [
     "node_modules",
     "dist",
-    "src/**/*.test.ts"
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx"
   ]
 }

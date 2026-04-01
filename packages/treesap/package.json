@@ -1,6 +1,6 @@
 {
   "name": "treesap",
-  "version": "0.2.2",
+  "version": "0.3.6",
   "description": "Opinionated Vite-first Node SSR framework.",
   "type": "module",
   "main": "./dist/index.js",
@@ -13,6 +13,10 @@
     "./vite": {
       "types": "./dist/vite.d.ts",
       "import": "./dist/vite.js"
+    },
+    "./island-runtime": {
+      "types": "./dist/island-runtime.d.ts",
+      "import": "./dist/island-runtime.js"
     }
   },
   "files": [
@@ -21,7 +25,7 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
     "prepare": "npm run build",
     "test": "vitest run -c vitest.config.ts",
     "prepublishOnly": "npm run build && npm test"
@@ -35,7 +39,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "hono": "^4.10.3"
+    "hono": "^4.10.3",
+    "sapling-island": "^0.2.3"
   },
   "peerDependencies": {
     "vite": "^8.0.0"

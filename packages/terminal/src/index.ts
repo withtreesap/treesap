@@ -1,5 +1,5 @@
 /**
- * TreeSap Terminal - Web-based terminal interface for remote sandboxes
+ * Treesap Terminal - Web-based terminal interface for remote sandboxes
  *
  * @packageDocumentation
  */

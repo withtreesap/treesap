@@ -3,7 +3,7 @@
 import { startServer } from './api-server';
 
 /**
- * CLI entry point for TreeSap Sandbox
+ * CLI entry point for Treesap Sandbox
  */
 
 // Parse command line arguments
@@ -45,7 +45,7 @@ for (let i = 0; i < args.length; i++) {
 
 function printHelp() {
   console.log(`
-TreeSap Sandbox Server
+Treesap Sandbox Server
 
 Usage: treesap-sandbox [options]
 

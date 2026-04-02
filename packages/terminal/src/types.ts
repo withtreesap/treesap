@@ -1,5 +1,5 @@
 /**
- * Type definitions for TreeSap Terminal package
+ * Type definitions for Treesap Terminal package
  */
 
 /**

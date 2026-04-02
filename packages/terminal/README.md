@@ -465,8 +465,8 @@ MIT
 
 ## Contributing
 
-Contributions welcome! Please see the main TreeSap repository for contributing guidelines.
+Contributions welcome! Please see the main Treesap repository for contributing guidelines.
 
 ---
 
-**TreeSap Terminal** - Part of the TreeSap ecosystem 🌲
+**Treesap Terminal** - Part of the Treesap ecosystem 🌲

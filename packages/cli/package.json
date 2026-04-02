@@ -1,0 +1,58 @@
+{
+  "name": "@treesap/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for Treesap tooling.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "treesap": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "vitest run --config vitest.config.ts",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
+  },
+  "keywords": [
+    "treesap",
+    "cli",
+    "images",
+    "automation"
+  ],
+  "author": "Treesap",
+  "license": "MIT",
+  "dependencies": {
+    "@treesap/image": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/withtreesap/treesap.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/withtreesap/treesap/issues"
+  },
+  "homepage": "https://github.com/withtreesap/treesap/tree/main/packages/cli#readme"
+}

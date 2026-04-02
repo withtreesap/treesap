@@ -14,7 +14,7 @@ export interface CreateSandboxResponse {
 }
 
 /**
- * Client library for interacting with TreeSap Sandbox API
+ * Client library for interacting with Treesap Sandbox API
  * Similar to @cloudflare/sandbox SDK
  */
 export class SandboxClient {

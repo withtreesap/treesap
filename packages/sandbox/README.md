@@ -1,4 +1,4 @@
-# 🌳 TreeSap Sandbox
+# 🌳 Treesap Sandbox
 
 A self-hosted sandbox API for isolated code execution and file management. Similar to Cloudflare's Sandbox SDK, but designed for self-hosting on your own infrastructure.
 
@@ -370,7 +370,7 @@ console.log('Active sandboxes:', stats.totalSandboxes);
 
 ## Architecture
 
-TreeSap Sandbox uses a simple, lightweight architecture:
+Treesap Sandbox uses a simple, lightweight architecture:
 
 ```
 ┌─────────────────────────────────────┐
@@ -417,7 +417,7 @@ TreeSap Sandbox uses a simple, lightweight architecture:
 
 ## Comparison with Cloudflare Sandbox SDK
 
-| Feature | TreeSap Sandbox | Cloudflare Sandbox |
+| Feature | Treesap Sandbox | Cloudflare Sandbox |
 |---------|----------------|-------------------|
 | Self-hosted | ✅ Yes | ❌ Cloud only |
 | Folder isolation | ✅ Yes | Container-based |
@@ -488,8 +488,8 @@ MIT
 ## Related Projects
 
 - [Cloudflare Sandbox SDK](https://developers.cloudflare.com/sandbox/) - Cloud-based sandbox execution
-- [TreeSap](https://github.com/withtreesap/treesap) - AI agent framework
+- [Treesap](https://github.com/withtreesap/treesap) - AI agent framework
 
 ---
 
-Built with ❤️ by the TreeSap Team
+Built with ❤️ by the Treesap Team

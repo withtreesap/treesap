@@ -1,0 +1,4 @@
+interface:
+  display_name: "Treesap"
+  short_description: "Build Treesap SSR apps and CLI workflows."
+  default_prompt: "Use $treesap to build a Treesap SSR route, layout, and island component."

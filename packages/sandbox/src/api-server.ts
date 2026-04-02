@@ -38,7 +38,7 @@ export function createServer(config: ServerConfig = {}) {
   app.get('/', (c) => {
     return c.json({
       status: 'ok',
-      service: 'TreeSap Sandbox',
+      service: 'Treesap Sandbox',
       version: '1.0.0',
       stats: manager.getStats(),
     });
@@ -459,7 +459,7 @@ export async function startServer(config: ServerConfig = {}) {
 
   const { app, manager } = createServer(config);
 
-  console.log(`🌳 TreeSap Sandbox Server starting...`);
+  console.log(`🌳 Treesap Sandbox Server starting...`);
   console.log(`📁 Base path: ${manager.getStats().basePath}`);
   console.log(`🚀 Server listening on http://${host}:${port}`);
 

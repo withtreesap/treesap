@@ -1,0 +1,57 @@
+{
+  "name": "@treesap/image",
+  "version": "0.1.0",
+  "description": "Node image optimization utilities and responsive picture markup for Treesap apps.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "vitest run --config vitest.config.ts",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
+  },
+  "keywords": [
+    "images",
+    "optimization",
+    "responsive-images",
+    "hono",
+    "treesap"
+  ],
+  "author": "Treesap",
+  "license": "MIT",
+  "dependencies": {
+    "hono": "^4.10.3",
+    "wasm-image-optimization": "^1.2.28"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/withtreesap/treesap.git",
+    "directory": "packages/image"
+  },
+  "bugs": {
+    "url": "https://github.com/withtreesap/treesap/issues"
+  },
+  "homepage": "https://github.com/withtreesap/treesap/tree/main/packages/image#readme"
+}

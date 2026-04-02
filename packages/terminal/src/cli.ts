@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * TreeSap Terminal CLI
+ * Treesap Terminal CLI
  * Start a terminal server from the current directory
  */
 
@@ -30,7 +30,7 @@ for (let i = 0; i < args.length; i++) {
     }
   } else if (arg === '--help') {
     console.log(`
-TreeSap Terminal CLI
+Treesap Terminal CLI
 
 Usage:
   npx @treesap/terminal [options]

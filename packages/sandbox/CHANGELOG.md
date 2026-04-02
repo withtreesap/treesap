@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### 🎉 Major Redesign - Breaking Changes
 
-TreeSap Sandbox has been completely redesigned from a terminal-centric WebSocket server to a folder-based sandbox API similar to Cloudflare's Sandbox SDK.
+Treesap Sandbox has been completely redesigned from a terminal-centric WebSocket server to a folder-based sandbox API similar to Cloudflare's Sandbox SDK.
 
 ### Added
 

@@ -30,7 +30,7 @@
     "hono",
     "process-management"
   ],
-  "author": "TreeSap Team",
+  "author": "Treesap Team",
   "license": "MIT",
   "dependencies": {
     "@hono/node-server": "^1.13.1",

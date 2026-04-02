@@ -1,5 +1,5 @@
 /**
- * TreeSap Terminal Server
+ * Treesap Terminal Server
  * Hono-based web server with terminal support
  */
 
@@ -48,7 +48,7 @@ export async function startTerminalServer(config: ServerConfig = {}) {
 
     return c.json<HealthResponse>({
       status: 'ok',
-      service: 'TreeSap Terminal',
+      service: 'Treesap Terminal',
       version: packageJson.version,
       activeSessions: manager.getActiveSessionCount()
     });
@@ -84,7 +84,7 @@ export async function startTerminalServer(config: ServerConfig = {}) {
       ? 'localhost'
       : info.address;
 
-    console.log(`🚀 TreeSap Terminal Server running at http://${displayAddress}:${info.port}`);
+    console.log(`🚀 Treesap Terminal Server running at http://${displayAddress}:${info.port}`);
     console.log(`   Terminal UI: http://${displayAddress}:${info.port}/terminal`);
     console.log(`   WebSocket: ws://${displayAddress}:${info.port}/terminal/ws`);
     console.log(`   API: http://${displayAddress}:${info.port}/api/terminal`);

@@ -11,7 +11,7 @@ import {
   type UserConfig,
   type ViteDevServer,
 } from "vite";
-import { sendNodeResponse, toWebRequest } from "./node.ts";
+import { sendNodeResponse, toWebRequest, type FetchApp } from "./node.ts";
 
 interface ManifestEntry {
   file: string;
@@ -117,6 +117,7 @@ function isFileRequest(pathname: string) {
 export function isViteRequest(pathname: string) {
   return (
     pathname === "/@vite/client" ||
+    pathname.startsWith("/@") ||
     pathname.startsWith("/@fs/") ||
     pathname.startsWith("/@id/") ||
     pathname.startsWith("/@vite/") ||
@@ -180,11 +181,11 @@ async function loadTreesapApp(server: ViteDevServer, entry: string, exportName: 
   const app = await createApp();
   if (!app || typeof app.fetch !== "function") {
     throw new Error(
-      `Treesap app factory "${exportName}" in ${entry} did not return an object with fetch().`
+      `Treesap app factory "${exportName}" in ${entry} did not return a fetch-compatible app. Return Treesap's createApp() result or any object with fetch(), such as a Hono app.`
     );
   }
 
-  return app as { fetch(request: Request): Response | Promise<Response> };
+  return app as FetchApp;
 }
 
 function resolveConfigRoot(viteConfig?: UserConfig) {
@@ -263,13 +264,32 @@ function resolveIslandRuntimeEntry() {
   return resolved;
 }
 
+function resolveOptionalSpaEntry(options: DefineTreesapConfigOptions) {
+  const root = resolveConfigRoot(options.vite);
+  const defaultSpaEntry = path.resolve(root, "src/app/main.tsx");
+
+  if (!existsSync(defaultSpaEntry)) {
+    return null;
+  }
+
+  return {
+    entry: "src/app/main.tsx",
+    absolutePath: defaultSpaEntry,
+  };
+}
+
 function createClientBuildInputs(options: DefineTreesapConfigOptions) {
   const browserEntry = resolveBrowserEntry(options);
   const islandEntries = resolveIslandEntries(options);
+  const spaEntry = resolveOptionalSpaEntry(options);
 
   const input: Record<string, string> = {
     browser: browserEntry.absolutePath,
   };
+
+  if (spaEntry) {
+    input["spa"] = spaEntry.absolutePath;
+  }
 
   islandEntries.forEach((island) => {
     input[`island-${island.name}`] = island.absolutePath;

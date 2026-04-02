@@ -6,6 +6,7 @@ import {
   getViteBrowserAssets,
   getViteEntryAssets,
   getViteModuleAsset,
+  isViteRequest,
 } from "./vite.ts";
 
 beforeEach(() => {
@@ -116,6 +117,11 @@ test("getViteEntryAssets uses /@fs for absolute dev entries", () => {
   expect(assets.scripts).toEqual([
     "/@fs/Users/example/project/node_modules/treesap/dist/island-runtime.js",
   ]);
+});
+
+test("isViteRequest treats Vite internal runtime paths as passthrough requests", () => {
+  expect(isViteRequest("/@react-refresh")).toBe(true);
+  expect(isViteRequest("/@anything/plugin-runtime")).toBe(true);
 });
 
 test("getViteModuleAsset resolves a single module script from the manifest", async () => {

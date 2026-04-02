@@ -5,6 +5,7 @@ Treesap is a Vite-first Node SSR framework.
 This package provides:
 
 - a small request/response app runtime for Node
+- support for any fetch-compatible server app, including Hono
 - router and middleware primitives
 - static file serving with sensible cache defaults
 - a `treesap/vite` entry for Vite dev and production builds
@@ -58,6 +59,32 @@ node dist/server/main.js
 ```
 
 If your browser entry lives somewhere else, set `browserEntry` explicitly rather than relying on a fixed file location.
+
+## Hono Server App
+
+Treesap only requires that your server factory return an object with `fetch(request)`. That means a `Hono` app works without a second dev server:
+
+```ts
+/** @jsxImportSource hono/jsx */
+import { Hono } from "hono";
+import { jsxRenderer } from "hono/jsx-renderer";
+
+export function createServerApp() {
+  const app = new Hono();
+
+  app.use("/*", jsxRenderer());
+
+  app.get("/", (c) => {
+    return c.render(<h1>Hello from Hono</h1>);
+  });
+
+  app.get("/api/health", (c) => c.json({ ok: true }));
+
+  return app;
+}
+```
+
+In production, mount your own static middleware for `dist/client`, for example `@hono/node-server/serve-static`.
 
 ## Layout Assets
 

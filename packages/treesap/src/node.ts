@@ -1,6 +1,10 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 
+export interface FetchApp {
+  fetch(request: Request): Response | Promise<Response>;
+}
+
 export async function toWebRequest(req: IncomingMessage) {
   const protocol = req.headers["x-forwarded-proto"] ?? "http";
   const host = req.headers.host ?? "localhost:8080";
@@ -42,7 +46,7 @@ export async function sendNodeResponse(res: ServerResponse, response: Response) 
 }
 
 export function serve(options: {
-  fetch: (request: Request) => Response | Promise<Response>;
+  fetch: FetchApp["fetch"];
   port: number;
 }) {
   const server = createServer(async (req, res) => {

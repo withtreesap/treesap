@@ -29,13 +29,18 @@ interface NormalizedTreesapIslandEntry {
   absolutePath: string;
 }
 
+interface TreesapRuntimeEntry {
+  entry: string;
+  absolutePath: string;
+}
+
 export interface TreesapVitePluginOptions {
   appEntry: string;
   appFactoryExport?: string;
   appEntryPath?: string;
   browserEntry?: string;
   islands?: NormalizedTreesapIslandEntry[];
-  islandRuntimeEntry?: string;
+  islandRuntimeEntry?: TreesapRuntimeEntry;
   spaBase?: string;
   spaIndexHtml?: string;
   spaEntryModule?: string;
@@ -249,7 +254,10 @@ function resolveIslandEntries(
   });
 }
 
-function resolveIslandRuntimeEntry() {
+function resolveIslandRuntimeEntry(
+  options: DefineTreesapConfigOptions
+): TreesapRuntimeEntry {
+  const root = resolveConfigRoot(options.vite);
   const runtimeDir = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
     path.resolve(runtimeDir, "island-runtime.js"),
@@ -261,7 +269,10 @@ function resolveIslandRuntimeEntry() {
     throw new Error("Treesap could not resolve its island runtime module.");
   }
 
-  return resolved;
+  return {
+    entry: normalizeManifestLookupPath(path.relative(root, resolved)),
+    absolutePath: resolved,
+  };
 }
 
 function resolveOptionalSpaEntry(options: DefineTreesapConfigOptions) {
@@ -296,7 +307,7 @@ function createClientBuildInputs(options: DefineTreesapConfigOptions) {
   });
 
   if (islandEntries.length > 0) {
-    input["treesap-island-runtime"] = resolveIslandRuntimeEntry();
+    input["treesap-island-runtime"] = resolveIslandRuntimeEntry(options).absolutePath;
   }
 
   return input;
@@ -343,7 +354,7 @@ function createTreesapDevConfig(options: DefineTreesapConfigOptions): UserConfig
         appEntryPath: resolveAppEntry(options),
         browserEntry: browserEntry.entry,
         islands: resolveIslandEntries(options),
-        islandRuntimeEntry: resolveIslandRuntimeEntry(),
+        islandRuntimeEntry: resolveIslandRuntimeEntry(options),
       }),
       ...(options.plugins ?? []),
     ],
@@ -366,7 +377,7 @@ function createTreesapClientBuildConfig(
         appEntryPath: resolveAppEntry(options),
         browserEntry: browserEntry.entry,
         islands: resolveIslandEntries(options),
-        islandRuntimeEntry: resolveIslandRuntimeEntry(),
+        islandRuntimeEntry: resolveIslandRuntimeEntry(options),
       }),
       ...(options.plugins ?? []),
     ],
@@ -396,7 +407,7 @@ function createTreesapServerBuildConfig(
         appEntryPath: resolveAppEntry(options),
         browserEntry: browserEntry.entry,
         islands: resolveIslandEntries(options),
-        islandRuntimeEntry: resolveIslandRuntimeEntry(),
+        islandRuntimeEntry: resolveIslandRuntimeEntry(options),
       }),
       ...(options.plugins ?? []),
     ],
@@ -437,9 +448,7 @@ export function treesap(options: TreesapVitePluginOptions): Plugin {
   const spaEntryModule = options.spaEntryModule ?? "/src/app/main.tsx";
   const appEntryPath = options.appEntryPath ? path.resolve(options.appEntryPath) : null;
   const islandEntries = options.islands ?? [];
-  const islandRuntimeEntry = options.islandRuntimeEntry
-    ? path.resolve(options.islandRuntimeEntry)
-    : null;
+  const islandRuntimeEntry = options.islandRuntimeEntry ?? null;
 
   return {
     name: "treesap",
@@ -465,7 +474,7 @@ export function treesap(options: TreesapVitePluginOptions): Plugin {
           : null,
         hasIslands && islandRuntimeEntry
           ? `globalThis.__TREESAP_ISLAND_RUNTIME_ENTRY__ = ${JSON.stringify(
-              islandRuntimeEntry
+              islandRuntimeEntry.entry
             )};`
           : null,
       ]
@@ -614,8 +623,10 @@ export function getViteEntryAssets(options: {
       return (
         normalizedKey === lookupEntry ||
         normalizedKey.endsWith(lookupEntry) ||
+        lookupEntry.endsWith("/" + normalizedKey) ||
         normalizedSrc === lookupEntry ||
-        normalizedSrc?.endsWith(lookupEntry) === true
+        normalizedSrc?.endsWith(lookupEntry) === true ||
+        (normalizedSrc != null && lookupEntry.endsWith("/" + normalizedSrc))
       );
     })?.[1];
 

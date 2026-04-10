@@ -7,6 +7,7 @@ import {
   getViteEntryAssets,
   getViteModuleAsset,
   isViteRequest,
+  treesap,
 } from "./vite.ts";
 
 beforeEach(() => {
@@ -153,4 +154,66 @@ test("getViteModuleAsset resolves a single module script from the manifest", asy
     process.chdir(previousCwd);
     await rm(tempDir, { recursive: true, force: true });
   }
+});
+
+test("getViteModuleAsset resolves absolute production entries against relative manifest keys", async () => {
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "treesap-vite-absolute-"));
+  const manifestDir = path.join(tempDir, "dist", "client", ".vite");
+  const runtimeEntry =
+    "/Users/example/project/node_modules/treesap/dist/island-runtime.js";
+
+  await mkdir(manifestDir, { recursive: true });
+  await writeFile(
+    path.join(manifestDir, "manifest.json"),
+    JSON.stringify({
+      "node_modules/treesap/dist/island-runtime.js": {
+        file: "assets/treesap-island-runtime.js",
+        src: "node_modules/treesap/dist/island-runtime.js",
+      },
+    })
+  );
+
+  const previousCwd = process.cwd();
+  process.chdir(tempDir);
+
+  try {
+    const asset = getViteModuleAsset({
+      entry: runtimeEntry,
+      mode: "production",
+    });
+
+    expect(asset).toBe("/assets/treesap-island-runtime.js");
+  } finally {
+    process.chdir(previousCwd);
+    await rm(tempDir, { recursive: true, force: true });
+  }
+});
+
+test("treesap injects a manifest-stable island runtime entry into the server app", () => {
+  const plugin = treesap({
+    appEntry: "src/server/app.tsx",
+    appEntryPath: "/Users/example/project/src/server/app.tsx",
+    browserEntry: "src/treesap-client.ts",
+    islands: [
+      {
+        name: "counter",
+        entry: "src/islands/counter.ts",
+        absolutePath: "/Users/example/project/src/islands/counter.ts",
+      },
+    ],
+    islandRuntimeEntry: {
+      entry: "node_modules/treesap/dist/island-runtime.js",
+      absolutePath: "/Users/example/project/node_modules/treesap/dist/island-runtime.js",
+    },
+  });
+
+  const transformed = plugin.transform?.(
+    "export function createServerApp() {}",
+    "/Users/example/project/src/server/app.tsx"
+  );
+
+  expect(typeof transformed).toBe("object");
+  expect(transformed && "code" in transformed ? transformed.code : "").toContain(
+    'globalThis.__TREESAP_ISLAND_RUNTIME_ENTRY__ = "node_modules/treesap/dist/island-runtime.js";'
+  );
 });

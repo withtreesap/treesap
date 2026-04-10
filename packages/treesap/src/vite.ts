@@ -387,6 +387,7 @@ function createTreesapClientBuildConfig(
       emptyOutDir: true,
       rolldownOptions: {
         input: createClientBuildInputs(options),
+        preserveEntrySignatures: "exports-only",
       },
     },
   });
